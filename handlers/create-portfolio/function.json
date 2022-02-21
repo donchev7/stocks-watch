@@ -5,16 +5,13 @@
       "type": "httpTrigger",
       "direction": "in",
       "name": "req",
-      "methods": [
-        "get",
-        "post"
-      ]
+      "methods": ["post"]
     },
     {
       "type": "http",
       "direction": "out",
-      "name": "res"
+      "name": "$return"
     }
   ],
-  "scriptFile": "../dist/portfolio/index.js"
+  "scriptFile": "../../dist/handlers/create-portfolio/index.js"
 }

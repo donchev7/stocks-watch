@@ -1,0 +1,4 @@
+name: stocks-watch
+runtime: nodejs
+description: A minimal Azure Native TypeScript Pulumi program
+main: cloud/
