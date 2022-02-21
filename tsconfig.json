@@ -7,10 +7,8 @@
     "module": "commonjs",
     "target": "es2020",
     "outDir": "dist",
-    "rootDir": ".",
     "sourceMap": true,
     "alwaysStrict": true,
-
     "strict": true,
     "allowUnusedLabels": false,
     "allowUnreachableCode": false,
@@ -29,5 +27,6 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
-  }
+  },
+  "exclude": ["cloud", "dist"]
 }

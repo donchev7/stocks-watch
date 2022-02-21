@@ -35,7 +35,7 @@ const writeEnvFile = () => {
     .all([cosmodb.endpoint, cosmodb.primaryKey, db.name, table.name])
     .apply(([endpoint, primaryKey, dbName, tableName]) => {
       fs.writeFileSync(
-        '../local.settings.json',
+        '../src/handlers/local.settings.json',
         buildTestEnvFile({
           endpoint,
           primaryKey,

@@ -7,7 +7,7 @@
     "build:production": "npm run prestart && npm prune --production",
     "watch": "tsc --w",
     "prestart": "npm run build && func extensions install",
-    "start:host": "func start",
+    "start:host": "cd src/handlers && func start",
     "start": "npm-run-all --parallel start:host watch",
     "upgrade": "npx npm-check-updates -u",
     "test": "echo \"No tests yet...\""
