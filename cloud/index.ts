@@ -1,20 +1,49 @@
-import * as pulumi from "@pulumi/pulumi";
-import * as resources from "@pulumi/azure-native/resources";
-import * as storage from "@pulumi/azure-native/storage";
+import * as fs from 'fs'
+import * as pulumi from '@pulumi/pulumi'
+import type * as azure from '@pulumi/azure'
+import * as cfg from './config'
+import { createDB, createTable } from './cosmosdb'
 
-// Create an Azure Resource Group
-const resourceGroup = new resources.ResourceGroup("resourceGroup");
+const infra = new pulumi.StackReference(`neurocode/cosmosdb/live`)
+const cosmodb = infra.getOutput('cosmosdb') as pulumi.Output<
+  azure.cosmosdb.Account
+>
 
-// Create an Azure resource (Storage Account)
-const storageAccount = new storage.StorageAccount("sa", {
-    resourceGroupName: resourceGroup.name,
-    sku: {
-        name: storage.SkuName.Standard_LRS,
+const db = createDB(cosmodb)
+const table = createTable(cosmodb, db)
+
+const buildTestEnvFile = (envs: any) => {
+  const settings = {
+    IsEncrypted: false,
+    Values: {
+      FUNCTIONS_WORKER_RUNTIME: 'node',
+      AzureWebJobsStorage: '',
+      COSMOS_ENDPOINT: envs.endpoint,
+      COSMOS_PRIMARY_KEY: envs.primaryKey,
+      COSMOS_DB_NAME: envs.dbName,
+      COSMOS_TABLE_NAME: envs.tableName,
     },
-    kind: storage.Kind.StorageV2,
-});
+  }
 
-// Export the primary key of the Storage Account
-const storageAccountKeys = pulumi.all([resourceGroup.name, storageAccount.name]).apply(([resourceGroupName, accountName]) =>
-    storage.listStorageAccountKeys({ resourceGroupName, accountName }));
-export const primaryStorageKey = storageAccountKeys.keys[0].value;
+  return JSON.stringify(settings)
+}
+
+const writeEnvFile = () => {
+  if (cfg.prefix.includes('live')) return
+
+  pulumi
+    .all([cosmodb.endpoint, cosmodb.primaryKey, db.name, table.name])
+    .apply(([endpoint, primaryKey, dbName, tableName]) => {
+      fs.writeFileSync(
+        '../local.settings.json',
+        buildTestEnvFile({
+          endpoint,
+          primaryKey,
+          dbName,
+          tableName,
+        }),
+      )
+    })
+}
+
+writeEnvFile()

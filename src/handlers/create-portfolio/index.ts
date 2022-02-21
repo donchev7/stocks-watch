@@ -4,6 +4,8 @@ const createPortfolio: AzureFunction = async function (
   context: Context,
   req: HttpRequest,
 ) {
+  const cosmosdb = process.env['COSMOS_TABLE_NAME']
+  context.log(`Cosmosdb ${cosmosdb}`)
   context.log('HTTP trigger function processed a request.')
   const portfolioName = req.body?.portfolioName
   const username = req.body?.username
