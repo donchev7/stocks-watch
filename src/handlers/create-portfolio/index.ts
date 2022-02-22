@@ -1,33 +1,14 @@
-import type { AzureFunction, Context, HttpRequest } from '@azure/functions'
+import newRepository from '../../adapters/cosmos'
+import { newHandler } from './handler'
 
-const createPortfolio: AzureFunction = async function (
-  context: Context,
-  req: HttpRequest,
-) {
-  const cosmosdb = process.env['COSMOS_TABLE_NAME']
-  context.log(`Cosmosdb ${cosmosdb}`)
-  context.log('HTTP trigger function processed a request.')
-  const portfolioName = req.body?.portfolioName
-  const username = req.body?.username
-  let responseMessage: string
+// const run = (fn: AzureFunction, testS: string): AzureFunction => {
+//   console.log(testS)
 
-  if (username && portfolioName) {
-    responseMessage =
-      'Hello, ' + username + '. This ' + portfolioName + ' will be created.'
-  } else {
-    responseMessage =
-      'This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response.'
-  }
+//   return (context: Context, req: HttpRequest) => {
+//     context.log.info(req)
 
-  //   const name = req.query.name || (req.body && req.body.name)
-  //   const responseMessage = name
-  //     ? 'Hello, ' + name + '. This HTTP triggered function executed successfully.'
-  //     : 'This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response.'
+//     return fn(context, req)
+//   }
+// }
 
-  return {
-    status: 201,
-    body: responseMessage,
-  }
-}
-
-export default createPortfolio
+export default newHandler(newRepository())

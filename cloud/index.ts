@@ -18,6 +18,7 @@ const buildTestEnvFile = (envs: any) => {
     Values: {
       FUNCTIONS_WORKER_RUNTIME: 'node',
       AzureWebJobsStorage: '',
+      NODE_ENV: 'development',
       COSMOS_ENDPOINT: envs.endpoint,
       COSMOS_PRIMARY_KEY: envs.primaryKey,
       COSMOS_DB_NAME: envs.dbName,
