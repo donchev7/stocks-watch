@@ -21,7 +21,7 @@ const savePortfolio = async (log: Logger, p: Portfolio): Promise<Portfolio> => {
   return portfolioSchema.parseAsync(p)
 }
 
-const getPortfolio = async (log: Logger, name: string) => {
+const getPortfolio = async (log: Logger, name: string): Promise<Portfolio> => {
   log.info(`getting portfolio ${name}`)
 
   const query: SqlQuerySpec = {
@@ -29,17 +29,26 @@ const getPortfolio = async (log: Logger, name: string) => {
     parameters: [{ name: '@name', value: name }],
   }
 
-  const { resources } = await cosmos.items.query(query).fetchAll()
+  const { resources } = await cosmos.items.query<Portfolio>(query).fetchAll()
 
   if (!resources || resources.length == 0) {
     throw new Error('nothing found')
   }
 
   if (resources.length > 1) {
-    throw new Error('conflict should be only one resource')
+    throw new Error('conflict. received more than one portfolio entity')
   }
 
-  return portfolioSchema.parseAsync(resources[0])
+  const entity = { ...resources[0] }
+  if (!entity.createdAt || !entity.updatedAt) {
+    throw new Error('missing dates')
+  }
+
+  // because cosmosDB stores dates as strings
+  entity.createdAt = new Date(entity.createdAt)
+  entity.updatedAt = new Date(entity.createdAt)
+
+  return portfolioSchema.parseAsync(entity)
 }
 
 const newRepository = () => {
