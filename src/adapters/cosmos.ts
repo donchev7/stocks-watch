@@ -51,6 +51,12 @@ const getPortfolio = async (log: Logger, name: string): Promise<Portfolio> => {
   return portfolioSchema.parseAsync(entity)
 }
 
+const listPortfolios = async (log: Logger) => {
+  log.info('getting all portfolios')
+
+  cosmos.items.readAll()
+}
+
 const newRepository = () => {
   return {
     savePortfolio,
