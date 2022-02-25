@@ -20,7 +20,7 @@ export const createTable = (
     resourceGroupName: cosmosAccount.resourceGroupName,
     accountName: cosmosAccount.name,
     databaseName: db.name,
-    partitionKeyPath: '/id',
+    partitionKeyPath: '/pk',
     partitionKeyVersion: 2,
     indexingPolicy: {
       indexingMode: 'Consistent',
