@@ -1,4 +1,4 @@
-import newRepository from '../../adapters/cosmos'
+import { portfolioDAO, assetDAO } from '../../adapters/cosmos'
 import { newHandler } from './handler'
 
 // const run = (fn: AzureFunction, testS: string): AzureFunction => {
@@ -11,4 +11,9 @@ import { newHandler } from './handler'
 //   }
 // }
 
-export default newHandler(newRepository())
+const db = {
+  getPortfolio: portfolioDAO.getPortfolio,
+  getAssets: assetDAO.getAssets,
+}
+
+export default newHandler(db)

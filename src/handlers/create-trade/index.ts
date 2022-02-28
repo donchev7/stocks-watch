@@ -1,4 +1,4 @@
-import newRepository from '../../adapters/cosmos'
+import { tradeDAO } from '../../adapters/cosmos'
 import { newHandler } from './handler'
 
 // const run = (fn: AzureFunction, testS: string): AzureFunction => {
@@ -11,4 +11,4 @@ import { newHandler } from './handler'
 //   }
 // }
 
-export default newHandler(newRepository())
+export default newHandler(tradeDAO)
