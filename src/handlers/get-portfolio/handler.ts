@@ -1,14 +1,12 @@
 import type { Context, HttpRequest } from '@azure/functions'
 import * as z from 'zod'
-import type { Portfolio } from '../../entities'
+import { assetSchema, metaFields, Portfolio } from '../../entities'
 import type { Logger } from '../../logger'
 
 const portfolioResponse = z.object({
-  id: z.string(),
   name: z.string(),
   createdAt: z.date(),
-  updatedAt: z.date(),
-  trades: z.array(z.string()).optional(),
+  assets: z.array(assetSchema.omit(metaFields)).optional(),
 })
 
 const portfolioName = z.string().min(1).max(100)

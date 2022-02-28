@@ -1,0 +1,15 @@
+{
+  "bindings": [
+    {
+      "type": "cosmosDBTrigger",
+      "name": "trades",
+      "direction": "in",
+      "leaseCollectionName": "leases",
+      "connectionStringSetting": "CONNECTION_STRING",
+      "databaseName": "ne-bobby-stocks",
+      "collectionName": "ne-bobby-stocks-trade",
+      "createLeaseCollectionIfNotExists": true
+    }
+  ],
+  "scriptFile": "../../../dist/handlers/trade-created/index.js"
+}

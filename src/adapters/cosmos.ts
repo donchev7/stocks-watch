@@ -1,56 +1,86 @@
-import {
-  BulkOperationType,
-  CosmosClient,
-  JSONObject,
-  OperationInput,
-  PatchOperationType,
-  SqlQuerySpec,
-} from '@azure/cosmos'
-import { nanoid } from 'nanoid'
+import { CosmosClient, SqlQuerySpec } from '@azure/cosmos'
 import * as cfg from '../config'
 import type { Logger } from '../logger'
 import {
+  Asset,
   Portfolio,
-  PortfolioProps,
   portfolioSchema,
   Trade,
   tradeSchema,
 } from '../entities'
+import { nanoid } from 'nanoid'
+
+// const getAssetQuery: SqlQuerySpec = {
+//   query: 'select * from c where c.pk = @pk',
+//   parameters: [{ name: '@pk', value: t.pk }],
+// }
 
 const client = new CosmosClient({
   endpoint: cfg.cosmosEndpoint,
   key: cfg.cosmosKey,
 })
 
-const cosmos = client.database(cfg.cosmosDB).container(cfg.cosmosTable)
-
-const toJSONobj = (t: object) => {
-  const entity: JSONObject = {}
-  for (const [key, value] of Object.entries(t)) {
-    if (
-      value instanceof Date &&
-      Object.prototype.toString.call(value) === '[object Date]'
-    ) {
-      entity[key] = value.toISOString()
-      continue
-    }
-    entity[key] = value
-  }
-
-  return entity
-}
+const portfolio = client
+  .database(cfg.cosmosDB)
+  .container(cfg.portfolioTableName)
+const trade = client.database(cfg.cosmosDB).container(cfg.tradeTableName)
+const asset = client.database(cfg.cosmosDB).container(cfg.assetTableName)
 
 const savePortfolio = async (log: Logger, p: Portfolio): Promise<Portfolio> => {
   p.id = p.name
   p.pk = p.name
+  p.sk = 'NA'
   p.createdAt = new Date()
   p.updatedAt = new Date()
-  p.trades = []
+  await portfolioSchema.parseAsync(p)
   log.info(`saving portfolio ${p.name}`)
 
-  await cosmos.items.create(p)
+  await portfolio.items.create(p)
 
-  return portfolioSchema.parseAsync(p)
+  return p
+}
+
+const updatePortfolioAsset = async (log: Logger, t: Trade) => {
+  log.info(`updating portfolioId ${t.pk}`)
+
+  const a: Asset = {
+    id: t.pk + t.symbol,
+    pk: t.pk,
+    sk: t.symbol,
+    symbol: t.symbol,
+    price: t.price,
+    amount: t.amount,
+    investmentValue: t.price * t.amount,
+    currentvalue: t.price * t.amount,
+    createdAt: t.createdAt,
+    updatedAt: t.createdAt,
+  }
+
+  const { resource } = await asset.item(t.pk + t.symbol, t.pk).read<Asset>()
+  if (!resource) {
+    await asset.items.create(a)
+    return
+  }
+
+  a.amount += resource.amount
+  a.currentvalue += resource.currentvalue
+  a.investmentValue += resource.investmentValue
+
+  await asset.items.upsert(a, {
+    accessCondition: { type: 'IfMatch', condition: resource._etag },
+  })
+
+  // const { resource } = await portfolio.item(t.pk).read<Portfolio>()
+  // if (!resource) {
+  //   log.error(`could not find portfolio with id ${t.pk}`)
+  //   return
+  // }
+
+  // resource.assets?.push(a)
+
+  // await portfolio.items.upsert(resource, {
+  //   accessCondition: { type: 'IfMatch', condition: resource._etag },
+  // })
 }
 
 const saveTrade = async (
@@ -59,46 +89,17 @@ const saveTrade = async (
   portfolioId: string,
 ): Promise<Trade> => {
   log.info(`saving trade ${t.symbol}`)
+
+  t.pk = portfolioId
+  t.sk = new Date().toISOString()
   t.id = nanoid()
   t.createdAt = new Date()
-  t.priceUpdatedAt = new Date()
-  t.pk = t.symbol
   t.value = t.amount * t.price
 
-  const tradesKey = PortfolioProps('trades')
-  const updatedKey = PortfolioProps('updatedAt')
-  const arrayIndex = '-' // append
+  await tradeSchema.parseAsync(t)
+  await trade.items.create(t)
 
-  const operations: OperationInput[] = [
-    {
-      operationType: BulkOperationType.Create,
-      partitionKey: t.symbol,
-      resourceBody: toJSONobj(t),
-    },
-    {
-      operationType: BulkOperationType.Patch,
-      partitionKey: portfolioId,
-      id: portfolioId,
-      resourceBody: {
-        operations: [
-          {
-            op: PatchOperationType.add,
-            path: `/${tradesKey}/${arrayIndex}`,
-            value: t.id,
-          },
-          {
-            op: PatchOperationType.add,
-            path: `/${updatedKey}`,
-            value: new Date(),
-          },
-        ],
-      },
-    },
-  ]
-  const resp = await cosmos.items.bulk(operations)
-  log.info(resp)
-
-  return tradeSchema.parseAsync(t)
+  return t
 }
 
 const getPortfolio = async (log: Logger, name: string): Promise<Portfolio> => {
@@ -109,7 +110,7 @@ const getPortfolio = async (log: Logger, name: string): Promise<Portfolio> => {
     parameters: [{ name: '@name', value: name }],
   }
 
-  const { resources } = await cosmos.items.query<Portfolio>(query).fetchAll()
+  const { resources } = await portfolio.items.query<Portfolio>(query).fetchAll()
 
   if (!resources || resources.length == 0) {
     throw new Error('nothing found')
@@ -134,7 +135,7 @@ const getPortfolio = async (log: Logger, name: string): Promise<Portfolio> => {
 const listPortfolios = async (log: Logger) => {
   log.info('getting all portfolios')
 
-  const { resources } = await cosmos.items.readAll().fetchAll()
+  const { resources } = await portfolio.items.readAll().fetchAll()
   if (!resources) {
     throw new Error('Shouldnt happen')
   }
@@ -148,6 +149,7 @@ const newRepository = () => {
     getPortfolio,
     listPortfolios,
     saveTrade,
+    updatePortfolioAsset,
   }
 }
 

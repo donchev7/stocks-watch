@@ -10,7 +10,9 @@ const cosmodb = infra.getOutput('cosmosdb') as pulumi.Output<
 >
 
 const db = createDB(cosmodb)
-const table = createTable(cosmodb, db)
+const portfolioTable = createTable('portfolio', cosmodb, db)
+const tradeTable = createTable('trade', cosmodb, db)
+const assetTable = createTable('asset', cosmodb, db)
 
 const buildTestEnvFile = (envs: any) => {
   const settings = {
@@ -22,7 +24,9 @@ const buildTestEnvFile = (envs: any) => {
       COSMOS_ENDPOINT: envs.endpoint,
       COSMOS_PRIMARY_KEY: envs.primaryKey,
       COSMOS_DB_NAME: envs.dbName,
-      COSMOS_TABLE_NAME: envs.tableName,
+      COSMOS_PORTFOLIO_TABLE_NAME: envs.portfolioTableName,
+      COSMOS_TRADE_TABLE_NAME: envs.tradeTableName,
+      COSMOS_ASSET_TABLE_NAME: envs.assetTableName,
     },
   }
 
@@ -33,18 +37,36 @@ const writeEnvFile = () => {
   if (cfg.prefix.includes('live')) return
 
   pulumi
-    .all([cosmodb.endpoint, cosmodb.primaryKey, db.name, table.name])
-    .apply(([endpoint, primaryKey, dbName, tableName]) => {
-      fs.writeFileSync(
-        '../src/handlers/local.settings.json',
-        buildTestEnvFile({
-          endpoint,
-          primaryKey,
-          dbName,
-          tableName,
-        }),
-      )
-    })
+    .all([
+      cosmodb.endpoint,
+      cosmodb.primaryKey,
+      db.name,
+      portfolioTable.name,
+      tradeTable.name,
+      assetTable.name,
+    ])
+    .apply(
+      ([
+        endpoint,
+        primaryKey,
+        dbName,
+        portfolioTableName,
+        tradeTableName,
+        assetTableName,
+      ]) => {
+        fs.writeFileSync(
+          '../src/handlers/local.settings.json',
+          buildTestEnvFile({
+            endpoint,
+            primaryKey,
+            dbName,
+            portfolioTableName,
+            tradeTableName,
+            assetTableName,
+          }),
+        )
+      },
+    )
 }
 
 writeEnvFile()

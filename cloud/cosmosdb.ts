@@ -12,11 +12,12 @@ export const createDB = (cosmosAccount: Output<azure.cosmosdb.Account>) =>
   })
 
 export const createTable = (
+  tableName: string,
   cosmosAccount: Output<azure.cosmosdb.Account>,
   db: azure.cosmosdb.SqlDatabase,
 ) =>
-  new azure.cosmosdb.SqlContainer(`${cfg.prefix}-${dbName}`, {
-    name: `${cfg.prefix}-${dbName}`,
+  new azure.cosmosdb.SqlContainer(`${cfg.prefix}-${dbName}-${tableName}`, {
+    name: `${cfg.prefix}-${dbName}-${tableName}`,
     resourceGroupName: cosmosAccount.resourceGroupName,
     accountName: cosmosAccount.name,
     databaseName: db.name,

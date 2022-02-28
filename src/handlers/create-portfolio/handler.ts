@@ -21,7 +21,7 @@ interface DB {
 
 export const newHandler = (db: DB) => createPortfolio(db)
 
-const createPortfolio = function (db: DB) {
+const createPortfolio = (db: DB) => {
   return async (context: Context, req: HttpRequest) => {
     const portfolio = await portfolioRequest.parseAsync(req.body)
     const entity = await db.savePortfolio(context.log, portfolio)

@@ -16,9 +16,8 @@ const tradeResponse = z.object({
   symbol: z.string(),
   amount: z.number().positive(),
   price: z.number().positive(),
-  value: z.number().positive(),
+  value: z.number(),
   createdAt: z.date(),
-  priceUpdatedAt: z.date(),
 })
 
 interface DB {
@@ -32,15 +31,25 @@ const createTrade = function (db: DB) {
     const tradeReq = await tradeRequest.parseAsync(req.body)
     const { portfolioId, ...rest } = tradeReq
 
+    if (rest.type === 'sell') {
+      rest.amount *= -1
+    }
+
     const entity = await db.saveTrade(
       context.log,
       rest as Trade,
       tradeReq.portfolioId,
     )
 
+    const resp = {
+      ...entity,
+      amount: Math.abs(entity.amount),
+      value: Math.abs(entity.value),
+    }
+
     return {
       status: 201,
-      body: tradeResponse.parse(entity),
+      body: tradeResponse.parse(resp),
     }
   }
 }
