@@ -65,7 +65,7 @@ const getAssets = async (
   return entities
 }
 
-export default { getAssets, upsertAsset }
+export { getAssets, upsertAsset }
 
 // const { resource } = await portfolio.item(t.pk).read<Portfolio>()
 // if (!resource) {

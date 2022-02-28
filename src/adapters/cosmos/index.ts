@@ -1,5 +1,5 @@
-export { default as assetDAO } from './asset'
-export { default as tradeDAO } from './trade'
-export { default as portfolioDAO } from './portfolio'
+import * as assetDAO from './asset'
+import * as tradeDAO from './trade'
+import * as portfolioDAO from './portfolio'
 
-export default {}
+export { assetDAO, tradeDAO, portfolioDAO }

@@ -1,4 +1,4 @@
-import { portfolioDAO, assetDAO } from '../../adapters/cosmos'
+import { assetDAO, portfolioDAO } from '../../adapters/cosmos'
 import { newHandler } from './handler'
 
 // const run = (fn: AzureFunction, testS: string): AzureFunction => {

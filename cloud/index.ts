@@ -27,6 +27,7 @@ const buildTestEnvFile = (envs: any) => {
       COSMOS_PORTFOLIO_TABLE_NAME: envs.portfolioTableName,
       COSMOS_TRADE_TABLE_NAME: envs.tradeTableName,
       COSMOS_ASSET_TABLE_NAME: envs.assetTableName,
+      COSMOS_CONNECTION_STRING: `AccountEndpoint=${envs.endpoint};AccountKey=${envs.primaryKey};`,
     },
   }
 

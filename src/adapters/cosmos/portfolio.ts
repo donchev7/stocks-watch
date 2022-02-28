@@ -45,4 +45,4 @@ const listPortfolios = async (log: Logger) => {
   return resources
 }
 
-export default { getPortfolio, listPortfolios, savePortfolio }
+export { getPortfolio, listPortfolios, savePortfolio }

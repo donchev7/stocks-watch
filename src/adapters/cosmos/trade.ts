@@ -22,4 +22,4 @@ const saveTrade = async (
   return t
 }
 
-export default { saveTrade }
+export { saveTrade }
