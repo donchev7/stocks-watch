@@ -6,9 +6,9 @@ interface DB {
   upsertAsset(log: Logger, data: Trade): Promise<void>
 }
 
-export const newHandler = (db: DB) => cosmosDBTrigger(db)
+export const newHandler = (db: DB) => handler(db)
 
-const cosmosDBTrigger = (db: DB) => {
+const handler = (db: DB) => {
   return async (context: Context, trades: Trade[]): Promise<void> => {
     for (const t of trades) {
       // because cosmosDB stores dates as strings

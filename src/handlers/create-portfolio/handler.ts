@@ -19,16 +19,16 @@ interface DB {
   savePortfolio(log: Logger, data: PortfolioRequest): Promise<Portfolio>
 }
 
-export const newHandler = (db: DB) => createPortfolio(db)
+export const newHandler = (db: DB) => handler(db)
 
-const createPortfolio = (db: DB) => {
+const handler = (db: DB) => {
   return async (context: Context, req: HttpRequest) => {
     const portfolio = await portfolioRequest.parseAsync(req.body)
-    const entity = await db.savePortfolio(context.log, portfolio)
+    const resource = await db.savePortfolio(context.log, portfolio)
 
     return {
       status: 201,
-      body: portfolioResponse.parse(entity),
+      body: portfolioResponse.parse({ resource }),
     }
   }
 }

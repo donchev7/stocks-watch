@@ -3,13 +3,17 @@ import { Trade, Asset, assetSchema } from '../../entities'
 import type { Logger } from '../../logger'
 import { assetClient } from './client'
 
+const assetPk = (portfolioId: string) => `asset:${portfolioId}`
+const assetSk = (symbol: string) => `symbol:${symbol}`
+const assetKey = (pk: string, symbol: string) => `${pk}:${symbol}`
+
 const upsertAsset = async (log: Logger, t: Trade) => {
   log.info(`updating portfolioId ${t.pk}`)
 
   const a: Asset = {
-    id: t.pk + t.symbol,
-    pk: t.pk,
-    sk: t.symbol,
+    id: assetKey(t.pk, t.symbol),
+    pk: assetPk(t.pk),
+    sk: assetSk(t.symbol),
     symbol: t.symbol,
     price: t.price,
     amount: t.amount,
@@ -20,7 +24,7 @@ const upsertAsset = async (log: Logger, t: Trade) => {
   }
 
   const { resource } = await assetClient
-    .item(t.pk + t.symbol, t.pk)
+    .item(assetKey(t.pk, t.symbol), assetPk(t.pk))
     .read<Asset>()
   if (!resource) {
     await assetClient.items.create(a)
@@ -44,7 +48,7 @@ const getAssets = async (
 
   const query: SqlQuerySpec = {
     query: 'select * from c where c.pk = @pk',
-    parameters: [{ name: '@pk', value: portfolioName }],
+    parameters: [{ name: '@pk', value: assetPk(portfolioName) }],
   }
   const entities: Asset[] = []
   const { resources } = await assetClient.items.query<Asset>(query).fetchAll()
@@ -66,15 +70,3 @@ const getAssets = async (
 }
 
 export { getAssets, upsertAsset }
-
-// const { resource } = await portfolio.item(t.pk).read<Portfolio>()
-// if (!resource) {
-//   log.error(`could not find portfolio with id ${t.pk}`)
-//   return
-// }
-
-// resource.assets?.push(a)
-
-// await portfolio.items.upsert(resource, {
-//   accessCondition: { type: 'IfMatch', condition: resource._etag },
-// })

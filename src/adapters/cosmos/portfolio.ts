@@ -1,11 +1,18 @@
+import type { FeedOptions } from '@azure/cosmos'
 import { Portfolio, portfolioSchema } from '../../entities'
 import type { Logger } from '../../logger'
 import { portfolioClient } from './client'
 
+const portfolioPk = (portfolioName: string) => `portfolio:${portfolioName}`
+const portfolioSk = () => `NA`
+const portfolioKey = (portfolioName: string) => `portfolioName:${portfolioName}`
+
 const getPortfolio = async (log: Logger, name: string): Promise<Portfolio> => {
   log.info(`getting portfolio ${name}`)
 
-  const { resource } = await portfolioClient.item(name, name).read()
+  const { resource } = await portfolioClient
+    .item(portfolioKey(name), portfolioPk(name))
+    .read()
 
   if (!resource) {
     throw new Error('nothing found')
@@ -21,9 +28,9 @@ const getPortfolio = async (log: Logger, name: string): Promise<Portfolio> => {
 }
 
 const savePortfolio = async (log: Logger, p: Portfolio): Promise<Portfolio> => {
-  p.id = p.name
-  p.pk = p.name
-  p.sk = 'NA'
+  p.id = portfolioKey(p.name)
+  p.pk = portfolioPk(p.name)
+  p.sk = portfolioSk()
   p.createdAt = new Date()
   p.updatedAt = new Date()
   await portfolioSchema.parseAsync(p)
@@ -34,15 +41,39 @@ const savePortfolio = async (log: Logger, p: Portfolio): Promise<Portfolio> => {
   return p
 }
 
-const listPortfolios = async (log: Logger) => {
+const listPortfolios = async (log: Logger, token?: string, limit = 50) => {
   log.info('getting all portfolios')
-
-  const { resources } = await portfolioClient.items.readAll().fetchAll()
-  if (!resources) {
-    throw new Error('Shouldnt happen')
+  if (limit <= 0) {
+    limit = 50
   }
 
-  return resources
+  let opts: FeedOptions = {
+    maxItemCount: limit,
+  }
+
+  if (token) {
+    opts = {
+      ...opts,
+      continuationToken: Buffer.from(token, 'base64').toString('utf-8'),
+    }
+  }
+
+  const {
+    resources,
+    continuationToken,
+    hasMoreResults,
+  } = await portfolioClient.items.readAll<Portfolio>(opts).fetchNext()
+
+  let parsedContinuationToken
+  if (continuationToken) {
+    parsedContinuationToken = Buffer.from(continuationToken).toString('base64')
+  }
+
+  return {
+    resources,
+    continuationToken: parsedContinuationToken,
+    hasMoreResults,
+  }
 }
 
 export { getPortfolio, listPortfolios, savePortfolio }
