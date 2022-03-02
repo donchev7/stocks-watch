@@ -4,25 +4,35 @@ import { Trade, tradeSchema } from '../../entities'
 import type { Logger } from '../../logger'
 import { tradeClient } from './client'
 
-const tradePk = (portfolioName: string) => `trade:${portfolioName}`
-const tradeSk = (dt: Date) => dt.toISOString()
-const tradeKey = () => nanoid()
+const keys = (portfolioName?: string, dt = new Date(), id = nanoid()) => {
+  if (!portfolioName) {
+    throw new Error('shouldnt happen')
+  }
+  return {
+    id,
+    pk: `trade:${portfolioName}`,
+    sk: dt.toISOString(),
+  }
+}
 
 const saveTrade = async (
   log: Logger,
   t: Trade,
   portfolioName: string,
+  now = new Date(),
 ): Promise<Trade> => {
   log.info(`saving trade ${t.symbol}`)
 
-  t.pk = tradePk(portfolioName)
-  t.sk = tradeSk(new Date())
-  t.id = tradeKey()
-  t.createdAt = new Date()
+  const { id, pk, sk } = keys(portfolioName, now)
+  t.pk = pk
+  t.sk = sk
+  t.id = id
+  t.createdAt = now
   t.value = t.amount * t.price
 
   await tradeSchema.parseAsync(t)
-  await tradeClient.items.create(t)
+  const { requestCharge } = await tradeClient.items.create(t)
+  log.info(`[saveTrade] requestCharge: ${requestCharge}`)
 
   return t
 }
@@ -34,6 +44,7 @@ const listTrades = async (
   limit = 50,
 ) => {
   log.info('getting all trades')
+
   if (limit <= 0) {
     limit = 50
   }
@@ -52,14 +63,17 @@ const listTrades = async (
   let resp: FeedResponse<Trade>
 
   if (portfolioName) {
+    const { pk } = keys(portfolioName)
     const query: SqlQuerySpec = {
-      query: 'select * from c where c.pk = @pk',
-      parameters: [{ name: '@pk', value: tradePk(portfolioName) }],
+      query: 'select * from c where c.pk = @pk order by c.sk DESC',
+      parameters: [{ name: '@pk', value: pk }],
     }
     resp = await tradeClient.items.query<Trade>(query, opts).fetchNext()
   } else {
     resp = await tradeClient.items.readAll<Trade>(opts).fetchNext()
   }
+
+  log.info(`[listTrades] requestCharge: ${resp.requestCharge}`)
 
   let parsedContinuationToken
   if (resp.continuationToken) {

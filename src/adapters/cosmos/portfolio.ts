@@ -3,16 +3,23 @@ import { Portfolio, portfolioSchema } from '../../entities'
 import type { Logger } from '../../logger'
 import { portfolioClient } from './client'
 
-const portfolioPk = (portfolioName: string) => `portfolio:${portfolioName}`
-const portfolioSk = () => `NA`
-const portfolioKey = (portfolioName: string) => `portfolioName:${portfolioName}`
+const keys = (portfolioName?: string, dt = new Date()) => {
+  return {
+    id: `portfolioName:${portfolioName}`,
+    pk: `portfolio:${portfolioName}`,
+    sk: dt.toISOString(),
+  }
+}
 
-const getPortfolio = async (log: Logger, name: string): Promise<Portfolio> => {
-  log.info(`getting portfolio ${name}`)
+const getPortfolio = async (
+  log: Logger,
+  portfolioName: string,
+): Promise<Portfolio> => {
+  log.info(`getting portfolio ${portfolioName}`)
 
-  const { resource } = await portfolioClient
-    .item(portfolioKey(name), portfolioPk(name))
-    .read()
+  const { id, pk } = keys(portfolioName)
+  const { resource, requestCharge } = await portfolioClient.item(id, pk).read()
+  log.info(`[getPortfolio] requestCharge: ${requestCharge}`)
 
   if (!resource) {
     throw new Error('nothing found')
@@ -27,16 +34,36 @@ const getPortfolio = async (log: Logger, name: string): Promise<Portfolio> => {
   return portfolioSchema.parseAsync(entity)
 }
 
-const savePortfolio = async (log: Logger, p: Portfolio): Promise<Portfolio> => {
-  p.id = portfolioKey(p.name)
-  p.pk = portfolioPk(p.name)
-  p.sk = portfolioSk()
-  p.createdAt = new Date()
-  p.updatedAt = new Date()
+const deletePortfolio = async (
+  log: Logger,
+  portfolioName: string,
+): Promise<void> => {
+  log.info(`deleting portfolio ${portfolioName}`)
+
+  const { id, pk } = keys(portfolioName)
+  const { requestCharge } = await portfolioClient.item(id, pk).delete()
+
+  log.info(`[deletePortfolio] requestCharge: ${requestCharge}`)
+}
+
+const savePortfolio = async (
+  log: Logger,
+  p: Portfolio,
+  now = new Date(),
+): Promise<Portfolio> => {
+  const { id, pk, sk } = keys(p.name, now)
+  p.id = id
+  p.pk = pk
+  p.sk = sk
+  p.createdAt = now
+  p.updatedAt = now
+
   await portfolioSchema.parseAsync(p)
+
   log.info(`saving portfolio ${p.name}`)
 
-  await portfolioClient.items.create(p)
+  const { requestCharge } = await portfolioClient.items.create(p)
+  log.info(`[savePortfolio] requestCharge: ${requestCharge}`)
 
   return p
 }
@@ -58,22 +85,21 @@ const listPortfolios = async (log: Logger, token?: string, limit = 50) => {
     }
   }
 
-  const {
-    resources,
-    continuationToken,
-    hasMoreResults,
-  } = await portfolioClient.items.readAll<Portfolio>(opts).fetchNext()
+  const resp = await portfolioClient.items.readAll<Portfolio>(opts).fetchNext()
+  log.info(`[listPortfolios] requestCharge: ${resp.requestCharge}`)
 
   let parsedContinuationToken
-  if (continuationToken) {
-    parsedContinuationToken = Buffer.from(continuationToken).toString('base64')
+  if (resp.continuationToken) {
+    parsedContinuationToken = Buffer.from(resp.continuationToken).toString(
+      'base64',
+    )
   }
 
   return {
-    resources,
+    resources: resp.resources,
     continuationToken: parsedContinuationToken,
-    hasMoreResults,
+    hasMoreResults: resp.hasMoreResults,
   }
 }
 
-export { getPortfolio, listPortfolios, savePortfolio }
+export { getPortfolio, listPortfolios, savePortfolio, deletePortfolio }

@@ -3,18 +3,14 @@ import { Trade, Asset, assetSchema } from '../../entities'
 import type { Logger } from '../../logger'
 import { assetClient } from './client'
 
-const assetPk = (portfolioId: string) => `asset:${portfolioId}`
-const assetSk = (symbol: string) => `symbol:${symbol}`
-const assetKey = (pk: string, symbol: string) => `${pk}:${symbol}`
-
 const keys = (symbol: string, portfolioName?: string) => {
   if (!portfolioName) {
     throw new Error('shouldnt happen')
   }
   return {
-    id: assetKey(portfolioName, symbol),
-    pk: assetPk(portfolioName),
-    sk: assetSk(portfolioName),
+    id: `${portfolioName}:${symbol}`,
+    pk: `asset:${portfolioName}`,
+    sk: `symbol:${symbol}`,
   }
 }
 
@@ -37,7 +33,11 @@ const upsertAsset = async (log: Logger, trade: Trade) => {
     updatedAt: trade.createdAt,
   }
 
-  const { resource } = await assetClient.item(id, pk).read<Asset>()
+  const { resource, requestCharge } = await assetClient
+    .item(id, pk)
+    .read<Asset>()
+  log.info(`[upsertAsset] requestCharge: ${requestCharge}`)
+
   if (!resource) {
     await assetClient.items.create(a)
     return
@@ -63,9 +63,11 @@ const getAssets = async (
     query: 'select * from c where c.pk = @pk',
     parameters: [{ name: '@pk', value: pk }],
   }
-  log('query', query)
   const entities: Asset[] = []
-  const { resources } = await assetClient.items.query<Asset>(query).fetchAll()
+  const { resources, requestCharge } = await assetClient.items
+    .query<Asset>(query)
+    .fetchAll()
+  log.info(`[getAssets] requestCharge: ${requestCharge}`)
 
   if (!resources || resources.length == 0) {
     entities
