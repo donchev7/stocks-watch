@@ -1,10 +1,19 @@
 import type { Context, HttpRequest } from '@azure/functions'
 import { z } from 'zod'
-import { metaFields, Trade, tradeSchema } from '../../entities'
+import type { Trade } from '../../entities'
 import type { Logger } from '../../logger'
 
 const responseSchema = z.object({
-  resources: z.array(tradeSchema.omit(metaFields)),
+  resources: z.array(
+    z.object({
+      symbol: z.string(),
+      amount: z.number(),
+      price: z.number().positive(),
+      value: z.number(),
+      type: z.string(),
+      createdAt: z.string(),
+    }),
+  ),
   hasMoreResults: z.boolean().optional(),
   continuationToken: z.string().optional(),
 })

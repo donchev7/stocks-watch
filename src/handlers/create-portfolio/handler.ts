@@ -8,9 +8,11 @@ const portfolioRequest = z.object({
 })
 
 const portfolioResponse = z.object({
-  id: z.string(),
-  name: z.string(),
-  createdAt: z.date(),
+  resource: z.object({
+    id: z.string(),
+    name: z.string(),
+    createdAt: z.date(),
+  }),
 })
 
 type PortfolioRequest = z.infer<typeof portfolioRequest>

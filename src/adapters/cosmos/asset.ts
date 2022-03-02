@@ -7,25 +7,37 @@ const assetPk = (portfolioId: string) => `asset:${portfolioId}`
 const assetSk = (symbol: string) => `symbol:${symbol}`
 const assetKey = (pk: string, symbol: string) => `${pk}:${symbol}`
 
-const upsertAsset = async (log: Logger, t: Trade) => {
-  log.info(`updating portfolioId ${t.pk}`)
+const keys = (symbol: string, portfolioName?: string) => {
+  if (!portfolioName) {
+    throw new Error('shouldnt happen')
+  }
+  return {
+    id: assetKey(portfolioName, symbol),
+    pk: assetPk(portfolioName),
+    sk: assetSk(portfolioName),
+  }
+}
 
+const upsertAsset = async (log: Logger, trade: Trade) => {
+  log.info(`updating portfolioId ${trade.pk}`)
+
+  const [_, portfolioName] = trade.pk.split(':')
+
+  const { id, pk, sk } = keys(trade.symbol, portfolioName)
   const a: Asset = {
-    id: assetKey(t.pk, t.symbol),
-    pk: assetPk(t.pk),
-    sk: assetSk(t.symbol),
-    symbol: t.symbol,
-    price: t.price,
-    amount: t.amount,
-    investmentValue: t.price * t.amount,
-    currentvalue: t.price * t.amount,
-    createdAt: t.createdAt,
-    updatedAt: t.createdAt,
+    id,
+    pk,
+    sk,
+    symbol: trade.symbol,
+    price: trade.price,
+    amount: trade.amount,
+    investmentValue: trade.price * trade.amount,
+    currentvalue: trade.price * trade.amount,
+    createdAt: trade.createdAt,
+    updatedAt: trade.createdAt,
   }
 
-  const { resource } = await assetClient
-    .item(assetKey(t.pk, t.symbol), assetPk(t.pk))
-    .read<Asset>()
+  const { resource } = await assetClient.item(id, pk).read<Asset>()
   if (!resource) {
     await assetClient.items.create(a)
     return
@@ -46,10 +58,12 @@ const getAssets = async (
 ): Promise<Asset[]> => {
   log.info(`getting assets for portfolio ${portfolioName}`)
 
+  const { pk } = keys('', portfolioName)
   const query: SqlQuerySpec = {
     query: 'select * from c where c.pk = @pk',
-    parameters: [{ name: '@pk', value: assetPk(portfolioName) }],
+    parameters: [{ name: '@pk', value: pk }],
   }
+  log('query', query)
   const entities: Asset[] = []
   const { resources } = await assetClient.items.query<Asset>(query).fetchAll()
 
