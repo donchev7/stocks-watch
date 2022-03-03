@@ -4,7 +4,7 @@ import { Trade, tradeTypeSchema } from '../../entities'
 import type { Logger } from '../../logger'
 
 const tradeRequest = z.object({
-  portfolioId: z.string(),
+  portfolioName: z.string(),
   symbol: z.string(),
   amount: z.number().positive(),
   price: z.number().positive(),
@@ -23,7 +23,7 @@ const tradeResponse = z.object({
 })
 
 interface DB {
-  saveTrade(log: Logger, data: Trade, portfolioId: string): Promise<Trade>
+  saveTrade(log: Logger, data: Trade, portfolioName: string): Promise<Trade>
 }
 
 export const newHandler = (db: DB) => handler(db)
@@ -31,7 +31,7 @@ export const newHandler = (db: DB) => handler(db)
 const handler = function (db: DB) {
   return async (context: Context, req: HttpRequest) => {
     const tradeReq = await tradeRequest.parseAsync(req.body)
-    const { portfolioId, ...rest } = tradeReq
+    const { portfolioName, ...rest } = tradeReq
 
     if (rest.type === 'sell') {
       rest.amount *= -1
@@ -40,7 +40,7 @@ const handler = function (db: DB) {
     const entity = await db.saveTrade(
       context.log,
       rest as Trade,
-      tradeReq.portfolioId,
+      tradeReq.portfolioName,
     )
 
     const resource = {
