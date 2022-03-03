@@ -16,7 +16,7 @@
     "start:host": "func start --prefix dist/",
     "start": "run-p start:host watch",
     "upgrade": "npx npm-check-updates -u",
-    "predeploy": "az account set -s e9a0397c-9b68-49ea-ae88-dcbd2f08e73e",
+    "predeploy": "az account set -s e9a0397c-9b68-49ea-ae88-dcbd2f08e73e && npm run ts",
     "deploy": "func azure functionapp publish $npm_package_name --build remote --prefix $npm_package_config_buildDir/",
     "test": "echo \"No tests yet...\""
   },

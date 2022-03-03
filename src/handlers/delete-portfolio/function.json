@@ -5,7 +5,7 @@
       "type": "httpTrigger",
       "direction": "in",
       "name": "req",
-      "methods": ["del"],
+      "methods": ["delete"],
       "route": "portfolio/{name:length(1,100)}"
     },
     {
