@@ -13,6 +13,5 @@
       "direction": "out",
       "name": "$return"
     }
-  ],
-  "scriptFile": "../../../dist/handlers/get-portfolio/index.js"
+  ]
 }

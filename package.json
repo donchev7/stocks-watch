@@ -2,14 +2,22 @@
   "name": "stocks-watch",
   "version": "",
   "main": "infra/",
+  "config": {
+    "buildDir": "dist"
+  },
   "scripts": {
-    "build": "tsc",
-    "build:production": "npm run prestart && npm prune --production",
+    "prets": "rm -rf dist",
+    "ts": "tsc",
+    "postts": "./scripts/postbuild.sh && npm run moveup",
+    "moveup": "copyfiles -u 1 src/handlers/**/*.json src/handlers/*.json dist && copyfiles package.json $npm_package_config_buildDir && mv $npm_package_config_buildDir/handlers/* $npm_package_config_buildDir/",
+    "build": "npm prune --production",
     "watch": "tsc --w",
-    "prestart": "npm run build && func extensions install",
-    "start:host": "cd src/handlers && func start",
-    "start": "npm-run-all --parallel start:host watch",
+    "prestart": "npm run ts && func extensions install",
+    "start:host": "func start --prefix dist/",
+    "start": "run-p start:host watch",
     "upgrade": "npx npm-check-updates -u",
+    "predeploy": "az account set -s e9a0397c-9b68-49ea-ae88-dcbd2f08e73e",
+    "deploy": "func azure functionapp publish $npm_package_name --build remote --prefix $npm_package_config_buildDir/",
     "test": "echo \"No tests yet...\""
   },
   "description": "",
@@ -19,6 +27,7 @@
     "@pulumi/azure-native": "^1.58.0",
     "@pulumi/azuread": "^5.17.0",
     "@pulumi/pulumi": "^3.24.1",
+    "copyfiles": "2.4.1",
     "npm-run-all": "^4.1.5",
     "typescript": "^4.5.5"
   },

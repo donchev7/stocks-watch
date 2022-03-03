@@ -10,6 +10,5 @@
       "collectionName": "ne-bobby-stocks-trade",
       "createLeaseCollectionIfNotExists": true
     }
-  ],
-  "scriptFile": "../../../dist/handlers/trade-created/index.js"
+  ]
 }
