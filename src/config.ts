@@ -13,7 +13,18 @@ const portfolioTableName = env
 const tradeTableName = env.get('COSMOS_TRADE_TABLE_NAME').required().asString()
 const assetTableName = env.get('COSMOS_ASSET_TABLE_NAME').required().asString()
 
+const alphaVantageApiKey = env
+  .get('ALPHA_VANTAGE_API_KEY')
+  .required()
+  .asString()
+const alphaVantageApiUrl = env
+  .get('ALPHA_VANTAGE_API_URL')
+  .required()
+  .asString()
+
 export {
+  alphaVantageApiKey,
+  alphaVantageApiUrl,
   isDevelopment,
   cosmosEndpoint,
   cosmosKey,
