@@ -29,5 +29,5 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
   },
-  "exclude": ["cloud", "dist"]
+  "include": ["src/"]
 }

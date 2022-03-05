@@ -24,7 +24,7 @@ local.settings.json
 
 node_modules
 dist
-
+coverage
 # Local python packages
 .python_packages/
 

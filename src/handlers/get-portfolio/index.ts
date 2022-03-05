@@ -1,19 +1,10 @@
 import { assetDAO, portfolioDAO } from '../../adapters/cosmos'
+import { errorHandler } from '../../middleware/error-handler'
 import { newHandler } from './handler'
-
-// const run = (fn: AzureFunction, testS: string): AzureFunction => {
-//   console.log(testS)
-
-//   return (context: Context, req: HttpRequest) => {
-//     context.log.info(req)
-
-//     return fn(context, req)
-//   }
-// }
 
 const db = {
   getPortfolio: portfolioDAO.getPortfolio,
-  getAssets: assetDAO.getAssets,
+  getAssets: assetDAO.getAssets
 }
 
-export default newHandler(db)
+export default errorHandler(newHandler(db))

@@ -10,7 +10,7 @@ const keys = (symbol: string, portfolioName?: string) => {
   return {
     id: `${portfolioName}:${symbol}`,
     pk: `asset:${portfolioName}`,
-    sk: `symbol:${symbol}`,
+    sk: `symbol:${symbol}`
   }
 }
 
@@ -28,14 +28,12 @@ const upsertAsset = async (log: Logger, trade: Trade) => {
     price: trade.price,
     amount: trade.amount,
     investmentValue: trade.price * trade.amount,
-    currentvalue: trade.price * trade.amount,
+    currentValue: trade.price * trade.amount,
     createdAt: trade.createdAt,
-    updatedAt: trade.createdAt,
+    updatedAt: trade.createdAt
   }
 
-  const { resource, requestCharge } = await assetClient
-    .item(id, pk)
-    .read<Asset>()
+  const { resource, requestCharge } = await assetClient.item(id, pk).read<Asset>()
   log.info(`[upsertAsset] requestCharge: ${requestCharge}`)
 
   if (!resource) {
@@ -44,29 +42,24 @@ const upsertAsset = async (log: Logger, trade: Trade) => {
   }
 
   a.amount += resource.amount
-  a.currentvalue += resource.currentvalue
+  a.currentValue += resource.currentValue
   a.investmentValue += resource.investmentValue
 
   await assetClient.items.upsert(a, {
-    accessCondition: { type: 'IfMatch', condition: resource._etag },
+    accessCondition: { type: 'IfMatch', condition: resource._etag }
   })
 }
 
-const getAssets = async (
-  log: Logger,
-  portfolioName: string,
-): Promise<Asset[]> => {
+const getAssets = async (log: Logger, portfolioName: string): Promise<Asset[]> => {
   log.info(`getting assets for portfolio ${portfolioName}`)
 
   const { pk } = keys('', portfolioName)
   const query: SqlQuerySpec = {
     query: 'select * from c where c.pk = @pk',
-    parameters: [{ name: '@pk', value: pk }],
+    parameters: [{ name: '@pk', value: pk }]
   }
   const entities: Asset[] = []
-  const { resources, requestCharge } = await assetClient.items
-    .query<Asset>(query)
-    .fetchAll()
+  const { resources, requestCharge } = await assetClient.items.query<Asset>(query).fetchAll()
   log.info(`[getAssets] requestCharge: ${requestCharge}`)
 
   if (!resources || resources.length == 0) {
@@ -77,7 +70,7 @@ const getAssets = async (
     const entity = {
       ...r,
       createdAt: new Date(r.createdAt),
-      updatedAt: new Date(r.updatedAt),
+      updatedAt: new Date(r.updatedAt)
     }
     entities.push(assetSchema.parse(entity))
   }
@@ -93,7 +86,7 @@ async function* listAssets(log: Logger) {
     log.info(`[listAssets] requestCharge: ${item.requestCharge}`)
 
     yield {
-      resources: item.resources ?? [],
+      resources: item.resources ?? []
     }
   }
 }
@@ -102,7 +95,7 @@ const updateAsset = async (log: Logger, asset: Asset & Resource) => {
   log.info(`updating asset ${asset.id}`)
 
   await assetClient.items.upsert(asset, {
-    accessCondition: { type: 'IfMatch', condition: asset._etag },
+    accessCondition: { type: 'IfMatch', condition: asset._etag }
   })
 }
 

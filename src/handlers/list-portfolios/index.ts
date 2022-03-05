@@ -1,4 +1,5 @@
 import { portfolioDAO } from '../../adapters/cosmos'
+import { errorHandler } from '../../middleware/error-handler'
 import { newHandler } from './handler'
 
-export default newHandler(portfolioDAO)
+export default errorHandler(newHandler(portfolioDAO))

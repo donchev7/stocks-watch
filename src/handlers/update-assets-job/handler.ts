@@ -5,7 +5,6 @@ import type { Logger } from '../../logger'
 interface DB {
   listAssets(log: Logger): AsyncGenerator<{ resources: Asset[] }>
   updateAsset(log: Logger, asset: Asset): Promise<void>
-  updateAsset(log: Logger, asset: Asset): Promise<void>
 }
 
 interface API {
@@ -19,7 +18,7 @@ const updatePrice = async (db: DB, api: API, log: Logger, assets: Asset[]) => {
     const { price: newPrice, tradingDay } = await api.getPrice(asset.symbol)
     asset.price = newPrice
     asset.updatedAt = tradingDay
-    asset.currentvalue = newPrice * asset.amount
+    asset.currentValue = newPrice * asset.amount
     await db.updateAsset(log, asset)
   }
 }
