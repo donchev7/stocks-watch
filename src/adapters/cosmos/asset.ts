@@ -1,4 +1,4 @@
-import type { SqlQuerySpec } from '@azure/cosmos'
+import type { Resource, SqlQuerySpec } from '@azure/cosmos'
 import { Trade, Asset, assetSchema } from '../../entities'
 import type { Logger } from '../../logger'
 import { assetClient } from './client'
@@ -85,4 +85,25 @@ const getAssets = async (
   return entities
 }
 
-export { getAssets, upsertAsset }
+async function* listAssets(log: Logger) {
+  log.info(`list all assets`)
+
+  const itemIterator = assetClient.items.readAll<Asset>().getAsyncIterator()
+  for await (const item of itemIterator) {
+    log.info(`[listAssets] requestCharge: ${item.requestCharge}`)
+
+    yield {
+      resources: item.resources ?? [],
+    }
+  }
+}
+
+const updateAsset = async (log: Logger, asset: Asset & Resource) => {
+  log.info(`updating asset ${asset.id}`)
+
+  await assetClient.items.upsert(asset, {
+    accessCondition: { type: 'IfMatch', condition: asset._etag },
+  })
+}
+
+export { getAssets, upsertAsset, updateAsset, listAssets }

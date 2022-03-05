@@ -14,6 +14,7 @@
     "allowUnreachableCode": false,
     "exactOptionalPropertyTypes": true,
     "noFallthroughCasesInSwitch": true,
+    "strictPropertyInitialization": false,
     "noImplicitOverride": true,
     "noImplicitReturns": true,
     "noPropertyAccessFromIndexSignature": true,

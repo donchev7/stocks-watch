@@ -3,7 +3,7 @@ import {
   alphaVantageApiKey,
   alphaVantageApiUrl,
   isDevelopment,
-} from '../config'
+} from '../../config'
 
 const clinet = axios.create({
   timeout: 7000,

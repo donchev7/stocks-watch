@@ -39,7 +39,7 @@ const getPrice = async (symbol: string) => {
   })
 
   return {
-    price: resp.data['Global Quote']['05. price'],
+    price: +resp.data['Global Quote']['05. price'],
     tradingDay: new Date(resp.data['Global Quote']['07. latest trading day']),
   }
 }
