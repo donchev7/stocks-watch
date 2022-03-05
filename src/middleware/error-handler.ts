@@ -20,7 +20,6 @@ export const errorHandler = (fn: AzureFunction): AzureFunction => {
 
       context.log.error('error occured', err)
       await reportError(err as Error)
-    } finally {
       return {
         status: 500,
         body: {
