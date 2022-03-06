@@ -1,15 +1,8 @@
 import type { Context, HttpRequest } from '@azure/functions'
 import * as z from 'zod'
 import { Trade, tradeTypeSchema } from '../../entities'
+import { requiredNumber, requiredString } from '../../helpers/validation'
 import type { Logger } from '../../logger'
-
-const tradeRequest = z.object({
-  portfolioName: z.string(),
-  symbol: z.string(),
-  amount: z.number().positive(),
-  price: z.number().positive(),
-  type: tradeTypeSchema,
-})
 
 const tradeResponse = z.object({
   resource: z.object({
@@ -18,17 +11,34 @@ const tradeResponse = z.object({
     amount: z.number().positive(),
     price: z.number().positive(),
     value: z.number(),
-    createdAt: z.date(),
-  }),
+    createdAt: z.date()
+  })
 })
 
 interface DB {
   saveTrade(log: Logger, data: Trade, portfolioName: string): Promise<Trade>
 }
 
-export const newHandler = (db: DB) => handler(db)
+interface API {
+  symbolExists(symbol: string): Promise<boolean>
+}
 
-const handler = function (db: DB) {
+export const newHandler = (db: DB, api: API) => handler(db, api)
+
+const handler = function (db: DB, api: API) {
+  const tradeRequest = z.object({
+    portfolioName: z.string(requiredString('portfolioName')),
+    symbol: z
+      .string(requiredString('symbol'))
+      .transform((s) => s.toLocaleUpperCase())
+      .refine(async (s) => await api.symbolExists(s), {
+        message: 'invalid symbol'
+      }),
+    amount: z.number(requiredNumber('amount')).positive({ message: 'amount must be positive' }),
+    price: z.number(requiredNumber('price')).positive({ message: 'price must be positive' }),
+    type: tradeTypeSchema
+  })
+
   return async (context: Context, req: HttpRequest) => {
     const tradeReq = await tradeRequest.parseAsync(req.body)
     const { portfolioName, ...rest } = tradeReq
@@ -37,21 +47,17 @@ const handler = function (db: DB) {
       rest.amount *= -1
     }
 
-    const entity = await db.saveTrade(
-      context.log,
-      rest as Trade,
-      tradeReq.portfolioName,
-    )
+    const entity = await db.saveTrade(context.log, rest as Trade, portfolioName)
 
     const resource = {
       ...entity,
       amount: Math.abs(entity.amount),
-      value: Math.abs(entity.value),
+      value: Math.abs(entity.value)
     }
 
     return {
       status: 201,
-      body: tradeResponse.parse({ resource }),
+      body: tradeResponse.parse({ resource })
     }
   }
 }

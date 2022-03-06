@@ -15,7 +15,8 @@ export const errorHandler = (fn: AzureFunction): AzureFunction => {
           status: 400,
           body: {
             error: {
-              msg: 'bad data'
+              msg: 'bad data',
+              reason: err.issues.shift()?.message
             }
           }
         }

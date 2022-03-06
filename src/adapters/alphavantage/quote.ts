@@ -35,18 +35,18 @@ type symbolMatch = {
 
 const getPrice = async (symbol: string) => {
   const resp = await clinet.get<globalQuote>('/query', {
-    params: { function: 'GLOBAL_QUOTE', symbol },
+    params: { function: 'GLOBAL_QUOTE', symbol }
   })
 
   return {
     price: +resp.data['Global Quote']['05. price'],
-    tradingDay: new Date(resp.data['Global Quote']['07. latest trading day']),
+    tradingDay: new Date(resp.data['Global Quote']['07. latest trading day'])
   }
 }
 
 const searchSymbol = async (searchTerm: string) => {
   const resp = await clinet.get<matchResponse>('/query', {
-    params: { function: 'SYMBOL_SEARCH', keywords: searchTerm },
+    params: { function: 'SYMBOL_SEARCH', keywords: searchTerm }
   })
 
   return {
@@ -56,9 +56,15 @@ const searchSymbol = async (searchTerm: string) => {
       name: match['2. name'],
       type: match['3. type'],
       tradingCurrency: match['8. currency'],
-      market: match['4. region'],
-    })),
+      market: match['4. region']
+    }))
   }
 }
 
-export { getPrice, searchSymbol }
+const symbolExists = async (symbol: string) => {
+  const { matches } = await searchSymbol(symbol)
+
+  return matches.findIndex((match) => match.symbol.toLocaleLowerCase() === symbol.toLocaleLowerCase()) !== -1
+}
+
+export { getPrice, searchSymbol, symbolExists }

@@ -1,8 +1,9 @@
 import type { Context, HttpRequest } from '@azure/functions'
 import * as z from 'zod'
+import { maxMsg, minMsg, requiredString } from '../../helpers/validation'
 
 const symbolTerm = z.object({
-  searchTerm: z.string().min(1).max(100)
+  searchTerm: z.string(requiredString('searchTerm')).min(1, minMsg('searchTerm')).max(100, maxMsg('searchTerm'))
 })
 
 const responseSchema = z.object({

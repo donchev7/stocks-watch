@@ -1,17 +1,21 @@
 import type { Context, HttpRequest } from '@azure/functions'
 import * as z from 'zod'
 import { Asset, assetSchema, metaFields, Portfolio } from '../../entities'
+import { maxMsg, minMsg, requiredString } from '../../helpers/validation'
 import type { Logger } from '../../logger'
 
 const portfolioResponse = z.object({
   resource: z.object({
     name: z.string(),
     createdAt: z.date(),
-    assets: z.array(assetSchema.omit(metaFields)).optional(),
-  }),
+    assets: z.array(assetSchema.omit(metaFields)).optional()
+  })
 })
 
-const portfolioName = z.string().min(1).max(100)
+const portfolioName = z
+  .string(requiredString('portfolioName'))
+  .min(1, minMsg('portfolioName'))
+  .max(100, maxMsg('portfolioName'))
 
 interface DB {
   getPortfolio(log: Logger, name: string): Promise<Portfolio>
@@ -32,7 +36,7 @@ const handler = function (db: DB) {
 
     return {
       status: 200,
-      body: portfolioResponse.parse({ resource }),
+      body: portfolioResponse.parse({ resource })
     }
   }
 }

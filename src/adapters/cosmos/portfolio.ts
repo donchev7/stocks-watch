@@ -7,14 +7,11 @@ const keys = (portfolioName?: string, dt = new Date()) => {
   return {
     id: `portfolioName:${portfolioName}`,
     pk: `portfolio:${portfolioName}`,
-    sk: dt.toISOString(),
+    sk: dt.toISOString()
   }
 }
 
-const getPortfolio = async (
-  log: Logger,
-  portfolioName: string,
-): Promise<Portfolio> => {
+const getPortfolio = async (log: Logger, portfolioName: string): Promise<Portfolio> => {
   log.info(`getting portfolio ${portfolioName}`)
 
   const { id, pk } = keys(portfolioName)
@@ -34,10 +31,7 @@ const getPortfolio = async (
   return portfolioSchema.parseAsync(entity)
 }
 
-const deletePortfolio = async (
-  log: Logger,
-  portfolioName: string,
-): Promise<void> => {
+const deletePortfolio = async (log: Logger, portfolioName: string): Promise<void> => {
   log.info(`deleting portfolio ${portfolioName}`)
 
   const { id, pk } = keys(portfolioName)
@@ -46,11 +40,7 @@ const deletePortfolio = async (
   log.info(`[deletePortfolio] requestCharge: ${requestCharge}`)
 }
 
-const savePortfolio = async (
-  log: Logger,
-  p: Portfolio,
-  now = new Date(),
-): Promise<Portfolio> => {
+const savePortfolio = async (log: Logger, p: Portfolio, now = new Date()): Promise<Portfolio> => {
   const { id, pk, sk } = keys(p.name, now)
   p.id = id
   p.pk = pk
@@ -75,13 +65,13 @@ const listPortfolios = async (log: Logger, token?: string, limit = 50) => {
   }
 
   let opts: FeedOptions = {
-    maxItemCount: limit,
+    maxItemCount: limit
   }
 
   if (token) {
     opts = {
       ...opts,
-      continuationToken: Buffer.from(token, 'base64').toString('utf-8'),
+      continuationToken: Buffer.from(token, 'base64').toString('utf-8')
     }
   }
 
@@ -90,15 +80,13 @@ const listPortfolios = async (log: Logger, token?: string, limit = 50) => {
 
   let parsedContinuationToken
   if (resp.continuationToken) {
-    parsedContinuationToken = Buffer.from(resp.continuationToken).toString(
-      'base64',
-    )
+    parsedContinuationToken = Buffer.from(resp.continuationToken).toString('base64')
   }
 
   return {
     resources: resp.resources,
     continuationToken: parsedContinuationToken,
-    hasMoreResults: resp.hasMoreResults,
+    hasMoreResults: resp.hasMoreResults
   }
 }
 

@@ -1,8 +1,9 @@
 import type { Context, HttpRequest } from '@azure/functions'
 import * as z from 'zod'
+import { requiredString } from '../../helpers/validation'
 import type { Logger } from '../../logger'
 
-const portfolioName = z.string().min(1).max(100)
+const portfolioName = z.string(requiredString('portfolioName'))
 
 interface DB {
   deletePortfolio(log: Logger, name: string): Promise<void>
@@ -18,7 +19,7 @@ const handler = function (db: DB) {
     await db.deletePortfolio(context.log, pName)
 
     return {
-      status: 204,
+      status: 204
     }
   }
 }
