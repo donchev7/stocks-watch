@@ -7,6 +7,9 @@ export const errorHandler = (fn: AzureFunction): AzureFunction => {
     try {
       return await fn(context, req)
     } catch (err) {
+      context.log.error('error occured', err)
+      await reportError(err as Error)
+
       if (err instanceof ZodError) {
         return {
           status: 400,
@@ -18,8 +21,6 @@ export const errorHandler = (fn: AzureFunction): AzureFunction => {
         }
       }
 
-      context.log.error('error occured', err)
-      await reportError(err as Error)
       return {
         status: 500,
         body: {

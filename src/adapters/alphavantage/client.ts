@@ -1,22 +1,16 @@
 import axios from 'axios'
-import {
-  alphaVantageApiKey,
-  alphaVantageApiUrl,
-  isDevelopment,
-} from '../../config'
+import { alphaVantageApiKey, alphaVantageApiUrl, isDevelopment } from '../../config'
 
 const clinet = axios.create({
   timeout: 7000,
-  baseURL: alphaVantageApiKey,
-  params: { apiKey: alphaVantageApiUrl },
+  baseURL: alphaVantageApiUrl
 })
 
-clinet.interceptors.request.use((req) => {
-  const request = { ...req }
-  request.params['apiKey'] = undefined
+clinet.defaults.params = { apikey: alphaVantageApiKey }
 
+clinet.interceptors.request.use((req) => {
   if (isDevelopment) {
-    console.log('starting request', JSON.stringify(request, null, 2))
+    console.log('starting request', JSON.stringify(req, null, 2))
   }
 
   return req
