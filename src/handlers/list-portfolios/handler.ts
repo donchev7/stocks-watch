@@ -8,11 +8,11 @@ const responseSchema = z.object({
     z.object({
       name: z.string(),
       createdAt: z.string(),
-      updatedAt: z.string(),
-    }),
+      updatedAt: z.string()
+    })
   ),
   hasMoreResults: z.boolean().optional(),
-  continuationToken: z.string().optional(),
+  continuationToken: z.string().optional()
 })
 
 const queryParamsSchema = z.object({
@@ -20,15 +20,11 @@ const queryParamsSchema = z.object({
   limit: z
     .string()
     .transform((x) => +x)
-    .optional(),
+    .optional()
 })
 
 interface DB {
-  listPortfolios(
-    log: Logger,
-    token?: string,
-    limit?: number,
-  ): Promise<{ resources: Portfolio[] }>
+  listPortfolios(log: Logger, token?: string, limit?: number): Promise<{ resources: Portfolio[] }>
 }
 
 export const newHandler = (db: DB) => handler(db)
@@ -37,15 +33,11 @@ const handler = function (db: DB) {
   return async (context: Context, req: HttpRequest) => {
     const params = await queryParamsSchema.parseAsync(req.query)
 
-    const entities = await db.listPortfolios(
-      context.log,
-      params.continuationToken,
-      params.limit,
-    )
+    const entities = await db.listPortfolios(context.log, params.continuationToken, params.limit)
 
     return {
       status: 200,
-      body: responseSchema.parse(entities),
+      body: responseSchema.parse(entities)
     }
   }
 }

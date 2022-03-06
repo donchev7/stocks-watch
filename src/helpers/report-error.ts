@@ -10,12 +10,13 @@ const reportError = async (error: Error) => {
   if (isDevelopment) {
     return
   }
-  const stack = getStack(error.stack).slice(0, 1000)
+  const maxChar = 35000
+  const stack = getStack(error.stack)
   const dateTimeStr = new Date().toISOString()
   const message = `${dateTimeStr} - an error occured in stocks-watch
 
   ${stack}
-  `
+  `.slice(0, maxChar)
 
   return axios.post(slackWebHook, { text: message }).catch(console.error)
 }

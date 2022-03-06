@@ -1,7 +1,10 @@
 import * as z from 'zod'
 
 const nameofFactory = <T>() => (name: keyof T) => name
-
+function roundToTwo(num: number) {
+  //@ts-ignore
+  return +(Math.round(num + 'e+2') + 'e-2')
+}
 export const tradeTypeSchema = z.enum(['buy', 'sell'])
 
 const meta = {
@@ -16,9 +19,9 @@ export const assetSchema = z.object({
   ...meta,
   symbol: z.string(),
   price: z.number().positive(),
-  amount: z.number(),
-  investmentValue: z.number(),
-  currentValue: z.number(),
+  amount: z.number().transform((x) => roundToTwo(x)),
+  investmentValue: z.number().transform((x) => roundToTwo(x)),
+  currentValue: z.number().transform((x) => roundToTwo(x)),
   createdAt: z.date(),
   updatedAt: z.date()
 })
