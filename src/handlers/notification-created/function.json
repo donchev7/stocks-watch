@@ -1,0 +1,14 @@
+{
+  "bindings": [
+    {
+      "type": "cosmosDBTrigger",
+      "name": "notifications",
+      "direction": "in",
+      "leaseCollectionName": "leases",
+      "connectionStringSetting": "COSMOS_CONNECTION_STRING",
+      "databaseName": "ne-bobby-stocks",
+      "collectionName": "ne-bobby-stocks-notification",
+      "createLeaseCollectionIfNotExists": true
+    }
+  ]
+}
