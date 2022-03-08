@@ -1,10 +1,12 @@
 import type { Context } from '@azure/functions'
-import type { Asset } from '../../entities'
+import type { Asset, PriceChangeNotification } from '../../entities'
 import type { Logger } from '../../logger'
+import { createNotification } from './priceChangeNotification'
 
 interface DB {
   listAssets(log: Logger): AsyncGenerator<{ resources: Asset[] }>
   updateAsset(log: Logger, asset: Asset): Promise<void>
+  createPriceChangeNotification(log: Logger, notification: PriceChangeNotification): Promise<void>
 }
 
 interface API {
@@ -13,13 +15,19 @@ interface API {
 
 export const newHandler = (db: DB, api: API) => handler(db, api)
 
-const updatePrice = async (db: DB, api: API, log: Logger, assets: Asset[]) => {
+const updatePrice = async (ctx: Context, db: DB, api: API, assets: Asset[]) => {
   for (const asset of assets) {
     const { price: newPrice, tradingDay } = await api.getPrice(asset.symbol)
     asset.price = newPrice
     asset.updatedAt = tradingDay
     asset.currentValue = newPrice * asset.amount
-    await db.updateAsset(log, asset)
+    const n = createNotification(ctx, asset)
+    if (n) {
+      await db.createPriceChangeNotification(ctx.log, n)
+      // notify again when new priceChange occurs
+      asset.lastPriceCheckValue = asset.currentValue
+    }
+    await db.updateAsset(ctx.log, asset)
   }
 }
 
@@ -30,7 +38,7 @@ const handler = (db: DB, api: API) => {
     context.log('update-assets-job trigger function running', timeStamp)
 
     for await (const { resources } of db.listAssets(log)) {
-      await updatePrice(db, api, log, resources)
+      await updatePrice(context, db, api, resources)
     }
   }
 }

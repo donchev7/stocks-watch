@@ -6,11 +6,10 @@ const client = new CosmosClient({
   key: cfg.cosmosKey,
 })
 
-const portfolioClient = client
-  .database(cfg.cosmosDB)
-  .container(cfg.portfolioTableName)
+const portfolioClient = client.database(cfg.cosmosDB).container(cfg.portfolioTableName)
 
 const tradeClient = client.database(cfg.cosmosDB).container(cfg.tradeTableName)
 const assetClient = client.database(cfg.cosmosDB).container(cfg.assetTableName)
+const notificationClient = client.database(cfg.cosmosDB).container(cfg.notificationTableName)
 
-export { assetClient, tradeClient, portfolioClient }
+export { assetClient, tradeClient, portfolioClient, notificationClient }

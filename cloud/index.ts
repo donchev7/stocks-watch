@@ -5,14 +5,13 @@ import * as cfg from './config'
 import { createDB, createTable } from './cosmosdb'
 
 const infra = new pulumi.StackReference(`neurocode/cosmosdb/live`)
-const cosmodb = infra.getOutput('cosmosdb') as pulumi.Output<
-  azure.cosmosdb.Account
->
+const cosmodb = infra.getOutput('cosmosdb') as pulumi.Output<azure.cosmosdb.Account>
 
 const db = createDB(cosmodb)
 const portfolioTable = createTable('portfolio', cosmodb, db)
 const tradeTable = createTable('trade', cosmodb, db)
 const assetTable = createTable('asset', cosmodb, db)
+const notificationTable = createTable('notification', cosmodb, db)
 
 const buildTestEnvFile = (envs: any) => {
   const settings = {
@@ -27,6 +26,7 @@ const buildTestEnvFile = (envs: any) => {
       COSMOS_PORTFOLIO_TABLE_NAME: envs.portfolioTableName,
       COSMOS_TRADE_TABLE_NAME: envs.tradeTableName,
       COSMOS_ASSET_TABLE_NAME: envs.assetTableName,
+      COSMOS_NOTIFICATION_TABLE_NAME: envs.notificationTable,
       COSMOS_CONNECTION_STRING: `AccountEndpoint=${envs.endpoint};AccountKey=${envs.primaryKey};`,
     },
   }
@@ -45,29 +45,22 @@ const writeEnvFile = () => {
       portfolioTable.name,
       tradeTable.name,
       assetTable.name,
+      notificationTable.name,
     ])
-    .apply(
-      ([
-        endpoint,
-        primaryKey,
-        dbName,
-        portfolioTableName,
-        tradeTableName,
-        assetTableName,
-      ]) => {
-        fs.writeFileSync(
-          '../src/handlers/local.settings.json',
-          buildTestEnvFile({
-            endpoint,
-            primaryKey,
-            dbName,
-            portfolioTableName,
-            tradeTableName,
-            assetTableName,
-          }),
-        )
-      },
-    )
+    .apply(([endpoint, primaryKey, dbName, portfolioTableName, tradeTableName, assetTableName, notificationTable]) => {
+      fs.writeFileSync(
+        '../src/handlers/local.settings.json',
+        buildTestEnvFile({
+          endpoint,
+          primaryKey,
+          dbName,
+          portfolioTableName,
+          tradeTableName,
+          assetTableName,
+          notificationTable,
+        }),
+      )
+    })
 }
 
 writeEnvFile()

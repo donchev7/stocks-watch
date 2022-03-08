@@ -10,24 +10,25 @@ async function* mockedListAssets(assets: Partial<Asset>[]) {
 
 const mockedDB = (assets: Partial<Asset>[]) => ({
   listAssets: jest.fn().mockImplementationOnce(() => mockedListAssets(assets)),
-  updateAsset: jest.fn()
+  updateAsset: jest.fn(),
+  createPriceChangeNotification: jest.fn(),
 })
 
 describe('handlers/update-assets-job', () => {
   const API = {
-    getPrice: jest.fn().mockResolvedValue({ price: 10, tradingDay: dt })
+    getPrice: jest.fn().mockResolvedValue({ price: 10, tradingDay: dt }),
   }
 
   it('updates the price of the asset', async () => {
     const oldAsset = {
-      amount: 10
+      amount: 10,
     }
     const DB = mockedDB([oldAsset])
     const updatedAssets = {
       amount: 10,
       currentValue: 100,
       price: 10,
-      updatedAt: dt
+      updatedAt: dt,
     }
     const handler = newHandler(DB, API)
     await handler(testContext(), '')

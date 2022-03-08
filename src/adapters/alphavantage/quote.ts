@@ -49,8 +49,10 @@ const searchSymbol = async (searchTerm: string) => {
     params: { function: 'SYMBOL_SEARCH', keywords: searchTerm }
   })
 
+  const bestMatches = resp.data?.bestMatches ?? []
+
   return {
-    matches: resp.data.bestMatches.map((match) => ({
+    matches: bestMatches.map((match) => ({
       searchScore: match['9. matchScore'],
       symbol: match['1. symbol'],
       name: match['2. name'],

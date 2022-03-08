@@ -10,7 +10,7 @@ export const tradeTypeSchema = z.enum(['buy', 'sell'])
 const meta = {
   id: z.string(),
   pk: z.string(),
-  sk: z.string()
+  sk: z.string(),
 }
 
 export const metaFields = Object.fromEntries(Object.entries(meta).map(([key, _]) => [key, true]))
@@ -21,16 +21,18 @@ export const assetSchema = z.object({
   price: z.number().positive(),
   amount: z.number().transform((x) => roundToTwo(x)),
   investmentValue: z.number().transform((x) => roundToTwo(x)),
+  lastPriceCheckValue: z.number().transform((x) => roundToTwo(x)),
+  lastMonthlyCheckValue: z.number().transform((x) => roundToTwo(x)),
   currentValue: z.number().transform((x) => roundToTwo(x)),
   createdAt: z.date(),
-  updatedAt: z.date()
+  updatedAt: z.date(),
 })
 
 export const portfolioSchema = z.object({
   ...meta,
   name: z.string(),
   createdAt: z.date(),
-  updatedAt: z.date()
+  updatedAt: z.date(),
 })
 
 export const tradeSchema = z.object({
@@ -40,12 +42,20 @@ export const tradeSchema = z.object({
   price: z.number().positive(),
   value: z.number(),
   type: tradeTypeSchema,
-  createdAt: z.date()
+  createdAt: z.date(),
+})
+
+export const priceChangeNotificationSchema = z.object({
+  ...meta,
+  type: z.enum(['priceChange']),
+  isUp: z.boolean(),
+  asset: assetSchema,
 })
 
 export type Trade = z.infer<typeof tradeSchema>
 export type Asset = z.infer<typeof assetSchema>
 export type Portfolio = z.infer<typeof portfolioSchema>
+export type PriceChangeNotification = z.infer<typeof priceChangeNotificationSchema>
 
 export const PortfolioProps = nameofFactory<Portfolio>()
 export const TradeProps = nameofFactory<Trade>()

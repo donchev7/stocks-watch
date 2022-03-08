@@ -9,6 +9,7 @@ const cosmosDB = env.get('COSMOS_DB_NAME').required().asString()
 const portfolioTableName = env.get('COSMOS_PORTFOLIO_TABLE_NAME').required().asString()
 const tradeTableName = env.get('COSMOS_TRADE_TABLE_NAME').required().asString()
 const assetTableName = env.get('COSMOS_ASSET_TABLE_NAME').required().asString()
+const notificationTableName = env.get('COSMOS_NOTIFICATION_TABLE_NAME').required().asString()
 
 const alphaVantageApiKey = env.get('ALPHA_VANTAGE_API_KEY').required().asString()
 const alphaVantageApiUrl = env.get('ALPHA_VANTAGE_API_URL').required().asString()
@@ -25,5 +26,6 @@ export {
   tradeTableName,
   portfolioTableName,
   assetTableName,
-  slackWebHook
+  notificationTableName,
+  slackWebHook,
 }
