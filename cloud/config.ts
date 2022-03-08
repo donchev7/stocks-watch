@@ -13,6 +13,7 @@ export const location = config.require('location')
 export const alphaVantageApiKey = config.requireSecret('alphaVantageApiKey')
 export const alphaVantageApiUrl = config.requireSecret('alphaVantageApiUrl')
 export const slackWebhookUrlErrors = config.requireSecret('slackWebhookUrlErrors')
+export const slackWebhookUrlStocksNotification = config.requireSecret('slackWebhookUrlStocksNotification')
 
 //@ts-ignore
 export const shortLocation = lo[location]

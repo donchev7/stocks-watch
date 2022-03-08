@@ -14,7 +14,8 @@ const notificationTableName = env.get('COSMOS_NOTIFICATION_TABLE_NAME').required
 const alphaVantageApiKey = env.get('ALPHA_VANTAGE_API_KEY').required().asString()
 const alphaVantageApiUrl = env.get('ALPHA_VANTAGE_API_URL').required().asString()
 
-const slackWebHook = env.get('SLACK_WEBHOOK_URL').required().asString()
+const slackWebHookErrors = env.get('SLACK_WEBHOOK_URL').required().asString()
+const slackWebHookNotification = env.get('SLACK_WEBHOOK_URL_NOTIFICATION').required().asString()
 
 export {
   alphaVantageApiKey,
@@ -27,5 +28,6 @@ export {
   portfolioTableName,
   assetTableName,
   notificationTableName,
-  slackWebHook,
+  slackWebHookErrors as slackWebHook,
+  slackWebHookNotification,
 }

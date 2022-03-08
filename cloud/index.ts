@@ -23,6 +23,7 @@ const buildTestEnvFile = (envs: any) => {
       ALPHA_VANTAGE_API_KEY: envs.alphaVantageApiKey,
       ALPHA_VANTAGE_API_URL: envs.alphaVantageApiUrl,
       SLACK_WEBHOOK_URL: envs.slackWebhookUrlErrors,
+      SLACK_WEBHOOK_URL_NOTIFICATION: envs.slackWebhookUrlStocksNotification,
       COSMOS_ENDPOINT: envs.endpoint,
       COSMOS_PRIMARY_KEY: envs.primaryKey,
       COSMOS_DB_NAME: envs.dbName,
@@ -52,6 +53,7 @@ const writeEnvFile = () => {
       cfg.alphaVantageApiKey,
       cfg.alphaVantageApiUrl,
       cfg.slackWebhookUrlErrors,
+      cfg.slackWebhookUrlStocksNotification,
     ])
     .apply(
       ([
@@ -65,6 +67,7 @@ const writeEnvFile = () => {
         alphaVantageApiKey,
         alphaVantageApiUrl,
         slackWebhookUrlErrors,
+        slackWebhookUrlStocksNotification,
       ]) => {
         fs.writeFileSync(
           '../src/handlers/local.settings.json',
@@ -79,6 +82,7 @@ const writeEnvFile = () => {
             alphaVantageApiKey,
             alphaVantageApiUrl,
             slackWebhookUrlErrors,
+            slackWebhookUrlStocksNotification,
           }),
         )
       },
