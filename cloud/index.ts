@@ -20,6 +20,9 @@ const buildTestEnvFile = (envs: any) => {
       FUNCTIONS_WORKER_RUNTIME: 'node',
       AzureWebJobsStorage: '',
       NODE_ENV: 'development',
+      ALPHA_VANTAGE_API_KEY: envs.alphaVantageApiKey,
+      ALPHA_VANTAGE_API_URL: envs.alphaVantageApiUrl,
+      SLACK_WEBHOOK_URL: envs.slackWebhookUrlErrors,
       COSMOS_ENDPOINT: envs.endpoint,
       COSMOS_PRIMARY_KEY: envs.primaryKey,
       COSMOS_DB_NAME: envs.dbName,
@@ -46,21 +49,40 @@ const writeEnvFile = () => {
       tradeTable.name,
       assetTable.name,
       notificationTable.name,
+      cfg.alphaVantageApiKey,
+      cfg.alphaVantageApiUrl,
+      cfg.slackWebhookUrlErrors,
     ])
-    .apply(([endpoint, primaryKey, dbName, portfolioTableName, tradeTableName, assetTableName, notificationTable]) => {
-      fs.writeFileSync(
-        '../src/handlers/local.settings.json',
-        buildTestEnvFile({
-          endpoint,
-          primaryKey,
-          dbName,
-          portfolioTableName,
-          tradeTableName,
-          assetTableName,
-          notificationTable,
-        }),
-      )
-    })
+    .apply(
+      ([
+        endpoint,
+        primaryKey,
+        dbName,
+        portfolioTableName,
+        tradeTableName,
+        assetTableName,
+        notificationTable,
+        alphaVantageApiKey,
+        alphaVantageApiUrl,
+        slackWebhookUrlErrors,
+      ]) => {
+        fs.writeFileSync(
+          '../src/handlers/local.settings.json',
+          buildTestEnvFile({
+            endpoint,
+            primaryKey,
+            dbName,
+            portfolioTableName,
+            tradeTableName,
+            assetTableName,
+            notificationTable,
+            alphaVantageApiKey,
+            alphaVantageApiUrl,
+            slackWebhookUrlErrors,
+          }),
+        )
+      },
+    )
 }
 
 writeEnvFile()
