@@ -49,7 +49,16 @@ export const priceChangeNotificationSchema = z.object({
   ...meta,
   type: z.enum(['priceChange']),
   isUp: z.boolean(),
-  asset: assetSchema,
+  asset: z.object({
+    symbol: z.string(),
+    price: z.number().positive(),
+    amount: z.number().transform((x) => roundToTwo(x)),
+    investmentValue: z.number().transform((x) => roundToTwo(x)), // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat
+    lastPriceCheckValue: z.number().transform((x) => roundToTwo(x)),
+    lastMonthlyCheckValue: z.number().transform((x) => roundToTwo(x)),
+    currentValue: z.number().transform((x) => roundToTwo(x)),
+    createdAt: z.date().or(z.string()),
+  }),
 })
 
 export type Trade = z.infer<typeof tradeSchema>

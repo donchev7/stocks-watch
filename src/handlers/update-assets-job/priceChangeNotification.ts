@@ -1,5 +1,5 @@
 import type { Context } from '@azure/functions'
-import { Asset, assetSchema, PriceChangeNotification } from '../../entities'
+import { Asset, priceChangeNotificationSchema } from '../../entities'
 
 const percentageThreshold = 4
 //@ts-ignore
@@ -12,7 +12,7 @@ const calculateChange = (asset: Asset) => {
   return (1 - minValue / maxValue) * 100
 }
 
-const getNotification = (ctx: Context, asset: Asset, isUp: boolean): PriceChangeNotification => ({
+const getNotification = (ctx: Context, asset: Asset, isUp: boolean) => ({
   id: ctx.invocationId,
   pk: `${dayOfYear}`,
   sk: asset.symbol,
@@ -24,10 +24,9 @@ const getNotification = (ctx: Context, asset: Asset, isUp: boolean): PriceChange
 export const createNotification = (ctx: Context, asset: Asset) => {
   const isUp = asset.currentValue > asset.lastPriceCheckValue
   const percentageChange = calculateChange(asset)
-  const a = assetSchema.parse(asset) // using parse to strip cosmos metadata from asset
 
   if (percentageChange >= percentageThreshold) {
-    return getNotification(ctx, a, isUp)
+    return priceChangeNotificationSchema.parse(getNotification(ctx, asset, isUp))
   }
 
   return undefined
