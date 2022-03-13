@@ -1,6 +1,10 @@
 import * as z from 'zod'
 
-const nameofFactory = <T>() => (name: keyof T) => name
+const nameofFactory =
+  <T>() =>
+  (name: keyof T) =>
+    name
+
 function roundToTwo(num: number) {
   //@ts-ignore
   return +(Math.round(num + 'e+2') + 'e-2')
@@ -47,7 +51,7 @@ export const tradeSchema = z.object({
 
 export const priceChangeNotificationSchema = z.object({
   ...meta,
-  type: z.enum(['priceChange']),
+  type: z.string().transform((_) => 'priceChange'),
   isUp: z.boolean(),
   asset: z.object({
     symbol: z.string(),
@@ -62,6 +66,7 @@ export const priceChangeNotificationSchema = z.object({
 })
 
 export type Trade = z.infer<typeof tradeSchema>
+export type TradeType = z.infer<typeof tradeTypeSchema>
 export type Asset = z.infer<typeof assetSchema>
 export type Portfolio = z.infer<typeof portfolioSchema>
 export type PriceChangeNotification = z.infer<typeof priceChangeNotificationSchema>

@@ -3,6 +3,7 @@ import faker from '@faker-js/faker'
 import { testContext, testReporter, testRequest } from '../../helpers/test-helpers'
 import { errorHandler } from '../../middleware/error-handler'
 import { newHandler } from './handler'
+import { fakeAsset } from '../../helpers/test-data'
 
 describe('handlers/get-portfolio', () => {
   const portfolioName = `${faker.random.alphaNumeric(10)}`
@@ -22,19 +23,7 @@ describe('handlers/get-portfolio', () => {
       createdAt: new Date(),
       name: portfolioName,
     })
-    mockDB.getAssets.mockResolvedValue([
-      {
-        symbol: 'MSFT',
-        price: 10,
-        amount: 10,
-        investmentValue: 100,
-        lastPriceCheckValue: 100,
-        lastMonthlyCheckValue: 100,
-        currentValue: 100,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-    ])
+    mockDB.getAssets.mockResolvedValue([fakeAsset()])
     const handler = errorHandler(newHandler(mockDB), testReporter())
     const resp = (await handler(testContext({ name: portfolioName }), req)) as { status: number }
 

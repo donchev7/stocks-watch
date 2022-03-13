@@ -1,11 +1,10 @@
 import 'jest-extended'
-import faker from '@faker-js/faker'
 import { testContext, testReporter, testRequest } from '../../helpers/test-helpers'
 import { errorHandler } from '../../middleware/error-handler'
 import { newHandler } from './handler'
+import { fakePortfolio } from '../../helpers/test-data'
 
 describe('handlers/list-portfolios', () => {
-  const portfolioName = `${faker.random.alphaNumeric(10)}`
   const mockDB = {
     listPortfolios: jest.fn(),
   }
@@ -18,13 +17,7 @@ describe('handlers/list-portfolios', () => {
   it('should list portfolios', async () => {
     const req = testRequest()
     mockDB.listPortfolios.mockResolvedValue({
-      resources: [
-        {
-          name: portfolioName,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-      ],
+      resources: [fakePortfolio()],
     })
     const handler = errorHandler(newHandler(mockDB), testReporter())
 

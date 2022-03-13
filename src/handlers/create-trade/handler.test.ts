@@ -3,6 +3,7 @@ import { faker } from '@faker-js/faker'
 import { testContext, testReporter, testRequest } from '../../helpers/test-helpers'
 import { errorHandler } from '../../middleware/error-handler'
 import { newHandler } from './handler'
+import { fakeTrade } from '../../helpers/test-data'
 
 describe('handlers/create-trade', () => {
   const portfolioName = `${faker.random.alphaNumeric(10)}`
@@ -22,15 +23,7 @@ describe('handlers/create-trade', () => {
     const req = testRequest({
       body: { portfolioName: portfolioName, symbol: 'MSFT', amount: 10, price: 10, type: 'buy' },
     })
-    mockTrade.saveTrade.mockResolvedValue({
-      id: faker.random.alphaNumeric(10),
-      symbol: 'MSFT',
-      amount: 10,
-      price: 10,
-      value: 100,
-      type: 'buy',
-      createdAt: new Date(),
-    })
+    mockTrade.saveTrade.mockResolvedValue(fakeTrade({ id: faker.random.alphaNumeric(10), createdAt: new Date() }))
     mockQuote.symbolExists.mockResolvedValue(true)
     const handler = errorHandler(newHandler(mockTrade, mockQuote), testReporter())
 
@@ -90,15 +83,9 @@ describe('handlers/create-trade', () => {
     const req = testRequest({
       body: { portfolioName: portfolioName, symbol: 'MSFT', amount: 10, price: 10, type: 'sell' },
     })
-    mockTrade.saveTrade.mockResolvedValue({
-      id: faker.random.alphaNumeric(10),
-      symbol: 'MSFT',
-      amount: -10,
-      price: 10,
-      value: -100,
-      type: 'buy',
-      createdAt: new Date(),
-    })
+    mockTrade.saveTrade.mockResolvedValue(
+      fakeTrade({ id: faker.random.alphaNumeric(10), amount: -10, value: -100, type: 'sell', createdAt: new Date() }),
+    )
     mockQuote.symbolExists.mockResolvedValue(true)
     const handler = errorHandler(newHandler(mockTrade, mockQuote), testReporter())
 

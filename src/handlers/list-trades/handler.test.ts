@@ -3,6 +3,7 @@ import faker from '@faker-js/faker'
 import { testContext, testReporter, testRequest } from '../../helpers/test-helpers'
 import { errorHandler } from '../../middleware/error-handler'
 import { newHandler } from './handler'
+import { fakeTrade } from '../../helpers/test-data'
 
 describe('handlers/list-trades', () => {
   const portfolioName = `${faker.random.alphaNumeric(10)}`
@@ -18,16 +19,7 @@ describe('handlers/list-trades', () => {
   it('should list trades', async () => {
     const req = testRequest()
     mockDB.listTrades.mockResolvedValue({
-      resources: [
-        {
-          symbol: 'MSFT',
-          amount: 10,
-          price: 10,
-          value: 100,
-          type: 'buy',
-          createdAt: new Date().toISOString(),
-        },
-      ],
+      resources: [fakeTrade()],
     })
     const handler = errorHandler(newHandler(mockDB), testReporter())
     const resp = (await handler(testContext(), req)) as { status: number }
@@ -38,16 +30,7 @@ describe('handlers/list-trades', () => {
   it('should list trades given a portfolioName', async () => {
     const req = testRequest({ query: { portfolioName } })
     mockDB.listTrades.mockResolvedValue({
-      resources: [
-        {
-          symbol: 'MSFT',
-          amount: 10,
-          price: 10,
-          value: 100,
-          type: 'buy',
-          createdAt: new Date().toISOString(),
-        },
-      ],
+      resources: [fakeTrade()],
     })
     const handler = errorHandler(newHandler(mockDB), testReporter())
     const resp = (await handler(testContext(), req)) as { status: number }
