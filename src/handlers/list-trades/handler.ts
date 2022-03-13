@@ -7,9 +7,9 @@ const responseSchema = z.object({
   resources: z.array(
     z.object({
       symbol: z.string(),
-      amount: z.number(),
+      amount: z.number().transform((x) => Math.abs(x)),
       price: z.number().positive(),
-      value: z.number(),
+      value: z.number().transform((x) => Math.abs(x)),
       type: z.string(),
       createdAt: z.string(),
     }),
@@ -46,12 +46,7 @@ const handler = function (db: DB) {
   return async (context: Context, req: HttpRequest) => {
     const params = await queryParamsSchema.parseAsync(req.query)
 
-    const entities = await db.listTrades(
-      context.log,
-      params.portfolioName,
-      params.continuationToken,
-      params.limit,
-    )
+    const entities = await db.listTrades(context.log, params.portfolioName, params.continuationToken, params.limit)
 
     return {
       status: 200,

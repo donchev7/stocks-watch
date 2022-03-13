@@ -75,3 +75,8 @@ getAll(container("trade"))
 GET /trades?portfolioname=name
 query(pk=name)
 
+## TODO
+
+- add cosmosDBtrigger on notification table
+- create slack channel for stocks-watch notifications
+- update update-assets-job to run everyday. If first day of month calculate monthly change and insert monthlyReport notification

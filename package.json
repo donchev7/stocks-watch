@@ -33,7 +33,11 @@
     "roots": [
       "src/"
     ],
+    "setupFilesAfterEnv": [
+      "jest-extended/all"
+    ],
     "collectCoverage": true,
+    "preset": "ts-jest",
     "collectCoverageFrom": [
       "./**/*.ts",
       "!src/handlers/**/index.ts"
@@ -43,7 +47,7 @@
     },
     "coverageThreshold": {
       "global": {
-        "branches": 30,
+        "branches": 25,
         "functions": 30,
         "lines": 30,
         "statements": 30
@@ -59,6 +63,7 @@
   "description": "",
   "devDependencies": {
     "@azure/functions": "^3.0.0",
+    "@faker-js/faker": "6.0.0-beta.0",
     "@pulumi/azure": "4.39.0",
     "@pulumi/azure-native": "^1.58.0",
     "@pulumi/azuread": "^5.17.0",
@@ -66,6 +71,7 @@
     "@types/jest": "27.4.1",
     "copyfiles": "2.4.1",
     "jest": "27.5.1",
+    "jest-extended": "2.0.0",
     "npm-run-all": "^4.1.5",
     "prettier": "2.5.1",
     "ts-jest": "27.1.3",

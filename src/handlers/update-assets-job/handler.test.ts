@@ -1,38 +1,97 @@
+import 'jest-extended'
 import type { Asset } from '../../entities'
 import { testContext } from '../../helpers/test-helpers'
 import { newHandler } from './handler'
-
-const dt = new Date()
 
 async function* mockedListAssets(assets: Partial<Asset>[]) {
   yield { resources: assets }
 }
 
-const mockedDB = (assets: Partial<Asset>[]) => ({
-  listAssets: jest.fn().mockImplementationOnce(() => mockedListAssets(assets)),
-  updateAsset: jest.fn(),
-  createPriceChangeNotification: jest.fn(),
-})
-
 describe('handlers/update-assets-job', () => {
-  const API = {
-    getPrice: jest.fn().mockResolvedValue({ price: 10, tradingDay: dt }),
+  const dt = new Date()
+  const mockedDB = {
+    listAssets: jest.fn(),
+    updateAsset: jest.fn(),
+    createPriceChangeNotification: jest.fn(),
+  }
+  const mockAPI = {
+    getPrice: jest.fn(),
   }
 
-  it('updates the price of the asset', async () => {
+  afterEach(() => {
+    jest.resetAllMocks()
+    jest.resetModules()
+  })
+
+  it('updates the price of the asset and inserts a notification (positivePriceChange)', async () => {
     const oldAsset = {
+      symbol: 'MSFT',
       amount: 10,
-    }
-    const DB = mockedDB([oldAsset])
-    const updatedAssets = {
-      amount: 10,
-      currentValue: 100,
       price: 10,
+      currentValue: 100,
+      investmentValue: 100,
+      lastPriceCheckValue: 100,
+      lastMonthlyCheckValue: 100,
+      createdAt: dt,
       updatedAt: dt,
     }
-    const handler = newHandler(DB, API)
+    mockedDB.listAssets.mockImplementationOnce(() => mockedListAssets([oldAsset]))
+    mockAPI.getPrice.mockResolvedValue({ price: 12, tradingDay: dt })
+
+    const handler = newHandler(mockedDB, mockAPI)
     await handler(testContext(), '')
 
-    expect(DB.updateAsset).toBeCalledWith(testContext().log, updatedAssets)
+    expect(mockedDB.updateAsset).toBeCalledWith(testContext().log, oldAsset)
+    expect(mockedDB.createPriceChangeNotification).toBeCalledWith(
+      testContext().log,
+      expect.objectContaining({ isUp: true }),
+    )
+  })
+
+  it('updates the price of the asset and inserts a notification (negativePriceChange)', async () => {
+    const oldAsset = {
+      symbol: 'MSFT',
+      amount: 10,
+      price: 10,
+      currentValue: 100,
+      investmentValue: 100,
+      lastPriceCheckValue: 100,
+      lastMonthlyCheckValue: 100,
+      createdAt: dt,
+      updatedAt: dt,
+    }
+    mockedDB.listAssets.mockImplementationOnce(() => mockedListAssets([oldAsset]))
+    mockAPI.getPrice.mockResolvedValue({ price: 8, tradingDay: dt })
+
+    const handler = newHandler(mockedDB, mockAPI)
+    await handler(testContext(), '')
+
+    expect(mockedDB.updateAsset).toBeCalledWith(testContext().log, oldAsset)
+    expect(mockedDB.createPriceChangeNotification).toBeCalledWith(
+      testContext().log,
+      expect.objectContaining({ isUp: false }),
+    )
+  })
+
+  it('updates the price of the asset and does not insert a notification', async () => {
+    const oldAsset = {
+      symbol: 'MSFT',
+      amount: 10,
+      price: 10,
+      currentValue: 100,
+      investmentValue: 100,
+      lastPriceCheckValue: 100,
+      lastMonthlyCheckValue: 100,
+      createdAt: dt,
+      updatedAt: dt,
+    }
+    mockedDB.listAssets.mockImplementationOnce(() => mockedListAssets([oldAsset]))
+    mockAPI.getPrice.mockResolvedValue({ price: 10.39, tradingDay: dt })
+
+    const handler = newHandler(mockedDB, mockAPI)
+    await handler(testContext(), '')
+
+    expect(mockedDB.updateAsset).toBeCalledWith(testContext().log, oldAsset)
+    expect(mockedDB.createPriceChangeNotification).not.toHaveBeenCalled()
   })
 })

@@ -8,11 +8,11 @@ const tradeResponse = z.object({
   resource: z.object({
     id: z.string(),
     symbol: z.string(),
-    amount: z.number().positive(),
-    price: z.number().positive(),
+    amount: z.number().transform((x) => Math.abs(x)),
+    price: z.number().transform((x) => Math.abs(x)),
     value: z.number(),
-    createdAt: z.date()
-  })
+    createdAt: z.date(),
+  }),
 })
 
 interface DB {
@@ -32,11 +32,11 @@ const handler = function (db: DB, api: API) {
       .string(requiredString('symbol'))
       .transform((s) => s.toLocaleUpperCase())
       .refine(async (s) => await api.symbolExists(s), {
-        message: 'invalid symbol'
+        message: 'invalid symbol',
       }),
     amount: z.number(requiredNumber('amount')).positive({ message: 'amount must be positive' }),
     price: z.number(requiredNumber('price')).positive({ message: 'price must be positive' }),
-    type: tradeTypeSchema
+    type: tradeTypeSchema,
   })
 
   return async (context: Context, req: HttpRequest) => {
@@ -47,17 +47,11 @@ const handler = function (db: DB, api: API) {
       rest.amount *= -1
     }
 
-    const entity = await db.saveTrade(context.log, rest as Trade, portfolioName)
-
-    const resource = {
-      ...entity,
-      amount: Math.abs(entity.amount),
-      value: Math.abs(entity.value)
-    }
+    const resource = await db.saveTrade(context.log, rest as Trade, portfolioName)
 
     return {
       status: 201,
-      body: tradeResponse.parse({ resource })
+      body: tradeResponse.parse({ resource }),
     }
   }
 }
