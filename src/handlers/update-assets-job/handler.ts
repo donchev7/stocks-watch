@@ -24,9 +24,12 @@ const updatePrice = async (ctx: Context, db: DB, api: API, assets: Asset[]) => {
     const n = createNotification(ctx, asset)
     if (n) {
       await db.createPriceChangeNotification(ctx.log, n)
+
       // notify again when new priceChange occurs
       asset.lastPriceCheckValue = asset.currentValue
     }
+    // if this fails the function will be re-tried by Azure Functions
+    // second notification wont be send out because the notification already exists (invocationId)
     await db.updateAsset(ctx.log, asset)
   }
 }

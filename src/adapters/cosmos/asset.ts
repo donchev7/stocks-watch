@@ -74,7 +74,7 @@ const getAssets = async (log: Logger, portfolioName: string): Promise<Asset[]> =
   log.info(`[getAssets] requestCharge: ${requestCharge}`)
 
   if (!resources || resources.length == 0) {
-    entities
+    return entities
   }
 
   for (const r of resources) {
