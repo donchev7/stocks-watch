@@ -10,7 +10,7 @@ interface DB {
 }
 
 interface API {
-  getPrice(log: Logger, symbol: string): Promise<{ price?: number; tradingDay?: Date }>
+  getPrice(log: Logger, symbol: string): Promise<{ price: number | undefined; tradingDay: Date | undefined }>
 }
 
 export const newHandler = (db: DB, api: API) => handler(db, api)
