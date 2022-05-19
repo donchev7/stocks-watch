@@ -41,10 +41,14 @@ describe('handlers/update-assets-job', () => {
     const handler = newHandler(mockedDB, mockAPI)
     await handler(testContext(), '')
 
-    expect(mockedDB.updateAsset).toBeCalledWith(testContext().log, oldAsset)
+    expect(mockedDB.updateAsset).toBeCalledWith(
+      testContext().log,
+      expect.objectContaining({ lastPriceCheckValue: 120, price: 12 }),
+    )
+
     expect(mockedDB.createPriceChangeNotification).toBeCalledWith(
       testContext().log,
-      expect.objectContaining({ isUp: true }),
+      expect.objectContaining({ lastPriceCheckValue: 120, price: 12 }),
     )
   })
 
@@ -66,10 +70,13 @@ describe('handlers/update-assets-job', () => {
     const handler = newHandler(mockedDB, mockAPI)
     await handler(testContext(), '')
 
-    expect(mockedDB.updateAsset).toBeCalledWith(testContext().log, oldAsset)
+    expect(mockedDB.updateAsset).toBeCalledWith(
+      testContext().log,
+      expect.objectContaining({ lastPriceCheckValue: 80, price: 8 }),
+    )
     expect(mockedDB.createPriceChangeNotification).toBeCalledWith(
       testContext().log,
-      expect.objectContaining({ isUp: false }),
+      expect.objectContaining({ lastPriceCheckValue: 80, price: 8 }),
     )
   })
 

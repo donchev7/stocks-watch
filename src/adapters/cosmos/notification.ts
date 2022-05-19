@@ -1,20 +1,24 @@
-import type { ErrorResponse } from '@azure/cosmos'
-import type { PriceChangeNotification } from '../../entities'
+import { nanoid } from 'nanoid'
+import type { Asset, PriceChangeNotification } from '../../entities'
 import type { Logger } from '../../logger'
 import { notificationClient } from './client'
 
-const handleDBError = (symbol: string, log: Logger, err: ErrorResponse) => {
-  if (err.code === 409) {
-    log.warn(`Notification already exists for ${symbol}`)
-    return
-  }
+const getNotification = (asset: Asset, id = nanoid()): PriceChangeNotification => {
+  //@ts-ignore
+  const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24)
+  const isUp = asset.currentValue > asset.lastPriceCheckValue
 
-  throw err
+  return {
+    id,
+    pk: `${dayOfYear}`,
+    sk: asset.symbol,
+    type: 'priceChange',
+    isUp,
+    asset,
+  }
 }
 
-export const createPriceChangeNotification = async (log: Logger, notification: PriceChangeNotification) => {
+export const createPriceChangeNotification = async (log: Logger, asset: Asset) => {
   log.info('creating priceChangeNotification')
-  await notificationClient.items
-    .upsert(notification)
-    .catch((err: ErrorResponse) => handleDBError(notification.asset.symbol, log, err))
+  await notificationClient.items.upsert(getNotification(asset))
 }

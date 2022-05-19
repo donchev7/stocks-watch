@@ -15,12 +15,7 @@ const keys = (portfolioName?: string, dt = new Date(), id = nanoid()) => {
   }
 }
 
-const saveTrade = async (
-  log: Logger,
-  t: Trade,
-  portfolioName: string,
-  now = new Date(),
-): Promise<Trade> => {
+const saveTrade = async (log: Logger, t: Trade, portfolioName: string, now = new Date()): Promise<Trade> => {
   log.info(`saving trade ${t.symbol}`)
 
   const { id, pk, sk } = keys(portfolioName, now)
@@ -37,12 +32,7 @@ const saveTrade = async (
   return t
 }
 
-const listTrades = async (
-  log: Logger,
-  portfolioName?: string,
-  token?: string,
-  limit = 50,
-) => {
+const listTrades = async (log: Logger, portfolioName?: string, token?: string, limit = 50) => {
   log.info('getting all trades')
 
   if (limit <= 0) {
@@ -77,9 +67,7 @@ const listTrades = async (
 
   let parsedContinuationToken
   if (resp.continuationToken) {
-    parsedContinuationToken = Buffer.from(resp.continuationToken).toString(
-      'base64',
-    )
+    parsedContinuationToken = Buffer.from(resp.continuationToken).toString('base64')
   }
 
   return {

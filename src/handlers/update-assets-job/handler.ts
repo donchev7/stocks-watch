@@ -1,12 +1,12 @@
 import type { Context } from '@azure/functions'
-import type { Asset, PriceChangeNotification } from '../../entities'
+import type { Asset } from '../../entities'
 import type { Logger } from '../../logger'
-import { createNotification } from './priceChangeNotification'
+import { hasPriceChangeOccured } from './priceChange'
 
 interface DB {
   listAssets(log: Logger): AsyncGenerator<{ resources: Asset[] }>
   updateAsset(log: Logger, asset: Asset): Promise<void>
-  createPriceChangeNotification(log: Logger, notification: PriceChangeNotification): Promise<void>
+  createPriceChangeNotification(log: Logger, asset: Asset): Promise<void>
 }
 
 interface API {
@@ -18,14 +18,11 @@ export const newHandler = (db: DB, api: API) => handler(db, api)
 const updatePrice = async (ctx: Context, db: DB, api: API, assets: Asset[]) => {
   for (const asset of assets) {
     const { price: newPrice, tradingDay } = await api.getPrice(asset.symbol)
-    asset.price = newPrice
-    asset.updatedAt = tradingDay
+    asset.price = newPrice ?? asset.price
+    asset.updatedAt = tradingDay ?? asset.updatedAt
     asset.currentValue = newPrice * asset.amount
-    const n = createNotification(ctx, asset)
-    if (n) {
-      await db.createPriceChangeNotification(ctx.log, n)
-
-      // notify again when new priceChange occurs
+    if (hasPriceChangeOccured(asset)) {
+      await db.createPriceChangeNotification(ctx.log, asset)
       asset.lastPriceCheckValue = asset.currentValue
     }
     // if this fails the function will be re-tried by Azure Functions

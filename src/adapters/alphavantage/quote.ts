@@ -1,3 +1,4 @@
+import type { Logger } from '../../logger'
 import clinet from './client'
 
 type globalQuote = {
@@ -33,20 +34,28 @@ type symbolMatch = {
   '9. matchScore': string
 }
 
-const getPrice = async (symbol: string) => {
+const getPrice = async (log: Logger, symbol: string) => {
   const resp = await clinet.get<globalQuote>('/query', {
-    params: { function: 'GLOBAL_QUOTE', symbol }
+    params: { function: 'GLOBAL_QUOTE', symbol },
   })
 
+  let price, tradingDay
+  try {
+    price = +resp.data['Global Quote']['05. price']
+    tradingDay = new Date(resp.data['Global Quote']['07. latest trading day'])
+  } catch (e) {
+    log.error(`Error parsing price for ${symbol}`, e)
+  }
+
   return {
-    price: +resp.data['Global Quote']['05. price'],
-    tradingDay: new Date(resp.data['Global Quote']['07. latest trading day'])
+    price,
+    tradingDay,
   }
 }
 
 const searchSymbol = async (searchTerm: string) => {
   const resp = await clinet.get<matchResponse>('/query', {
-    params: { function: 'SYMBOL_SEARCH', keywords: searchTerm }
+    params: { function: 'SYMBOL_SEARCH', keywords: searchTerm },
   })
 
   const bestMatches = resp.data?.bestMatches ?? []
@@ -58,8 +67,8 @@ const searchSymbol = async (searchTerm: string) => {
       name: match['2. name'],
       type: match['3. type'],
       tradingCurrency: match['8. currency'],
-      market: match['4. region']
-    }))
+      market: match['4. region'],
+    })),
   }
 }
 

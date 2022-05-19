@@ -16,7 +16,7 @@ const tradeResponse = z.object({
 })
 
 interface DB {
-  saveTrade(log: Logger, data: Trade, portfolioName: string): Promise<Trade>
+  saveTrade(log: Logger, data: Partial<Trade>, portfolioName: string): Promise<Trade>
 }
 
 interface API {
@@ -47,7 +47,7 @@ const handler = function (db: DB, api: API) {
       rest.amount *= -1
     }
 
-    const resource = await db.saveTrade(context.log, rest as Trade, portfolioName)
+    const resource = await db.saveTrade(context.log, rest, portfolioName)
 
     return {
       status: 201,
