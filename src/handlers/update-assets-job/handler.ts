@@ -10,14 +10,14 @@ interface DB {
 }
 
 interface API {
-  getPrice(symbol: string): Promise<{ price: number; tradingDay: Date }>
+  getPrice(log: Logger, symbol: string): Promise<{ price: number; tradingDay: Date }>
 }
 
 export const newHandler = (db: DB, api: API) => handler(db, api)
 
 const updatePrice = async (ctx: Context, db: DB, api: API, assets: Asset[]) => {
   for (const asset of assets) {
-    const { price: newPrice, tradingDay } = await api.getPrice(asset.symbol)
+    const { price: newPrice, tradingDay } = await api.getPrice(ctx.log, asset.symbol)
     asset.price = newPrice ?? asset.price
     asset.updatedAt = tradingDay ?? asset.updatedAt
     asset.currentValue = newPrice * asset.amount
