@@ -1,3 +1,4 @@
+import type { AxiosError, AxiosResponse } from 'axios'
 import type { Logger } from '../../logger'
 import clinet from './client'
 
@@ -34,10 +35,33 @@ type symbolMatch = {
   '9. matchScore': string
 }
 
+const sleep = (milliSeconds: number) => new Promise((resolve) => setTimeout(resolve, milliSeconds))
+const RETRIES = 4
+
 const getPrice = async (log: Logger, symbol: string) => {
-  const resp = await clinet.get<globalQuote>('/query', {
-    params: { function: 'GLOBAL_QUOTE', symbol },
-  })
+  let resp: AxiosResponse<globalQuote, any> | null = null
+  let err: AxiosError | null = null
+
+  for (let i = 1; i <= RETRIES; i++) {
+    resp = await clinet
+      .get<globalQuote>('/query', {
+        params: { function: 'GLOBAL_QUOTE', symbol },
+      })
+      .catch((error) => {
+        err = error
+        return null
+      })
+
+    if (resp) {
+      break
+    }
+
+    await sleep(1200)
+  }
+
+  if (!resp) {
+    throw err ?? new Error(`getPrice timeout after ${RETRIES} retries`)
+  }
 
   let price, tradingDay
   try {
