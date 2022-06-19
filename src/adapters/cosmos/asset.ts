@@ -50,7 +50,7 @@ const upsertAsset = async (log: Logger, trade: Trade) => {
 
   const tradeValue = trade.price * trade.amount
 
-  resource.amount += tradeValue
+  resource.amount += trade.amount
   resource.currentValue += tradeValue
   resource.investmentValue += tradeValue
   resource.updatedAt = trade.createdAt
