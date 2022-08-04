@@ -58,7 +58,7 @@ const handler = function (db: DB) {
       }
     })
 
-    const portfolioChange = `${portfolioPerformance.toFixed(2)}%`
+    const portfolioChange = (portfolioPerformance / assets.length).toFixed(2) + '%'
     const resource = { ...entity, change: portfolioChange, assets }
 
     return {
