@@ -8,6 +8,7 @@
   "scripts": {
     "prets": "rm -rf dist",
     "ts": "tsc",
+    "setversion": "az functionapp config set --name stocks-watch --resource-group stockswatch --linux-fx-version \"node|16\"",
     "postts": "./scripts/postbuild.sh && npm run moveup",
     "moveup": "copyfiles -u 1 src/handlers/**/*.json src/handlers/*.json dist && copyfiles package.json $npm_package_config_buildDir && mv $npm_package_config_buildDir/handlers/* $npm_package_config_buildDir/",
     "build": "npm prune --production",
